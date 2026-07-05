@@ -7,6 +7,7 @@ import {
   Text,
   View,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import { DrawerActions } from "@react-navigation/native";
 import { useNavigation } from "expo-router";
@@ -86,43 +87,48 @@ export default function Dashboard() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Pressable
-          onPress={() =>
-            navigation.dispatch(DrawerActions.openDrawer())
-          }
-        >
-          <Ionicons
-            name="menu"
-            size={30}
-            color="#111827"
-          />
-        </Pressable>
-
-        <View style={{ flex: 1, marginLeft: 15 }}>
-          <Text style={styles.title}>Dashboard</Text>
-
-          <Text style={styles.subtitle}>
-            Overview of your wholesale inventory
-          </Text>
-        </View>
-
-        <Pressable
-          onPress={() => signOut()}
-          style={styles.logoutButton}
-        >
-          <Text style={styles.logoutText}>
-            Logout
-          </Text>
-        </Pressable>
-      </View>
-
       {dashboard && (
-        <>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 40 }}
+          nestedScrollEnabled={true}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.header}>
+            <Pressable
+              onPress={() =>
+                navigation.dispatch(DrawerActions.openDrawer())
+              }
+            >
+              <Ionicons
+                name="menu"
+                size={30}
+                color="#111827"
+              />
+            </Pressable>
+
+            <View style={{ flex: 1, marginLeft: 15 }}>
+              <Text style={styles.title}>Dashboard</Text>
+
+              <Text style={styles.subtitle}>
+                Overview of your wholesale inventory
+              </Text>
+            </View>
+
+            <Pressable
+              onPress={() => signOut()}
+              style={styles.logoutButton}
+            >
+              <Text style={styles.logoutText}>
+                Logout
+              </Text>
+            </Pressable>
+          </View>
+
           <StatsSection stats={dashboard.stats} />
           <RecentActivitySection transactions={dashboard.recentTransactions} />
           <LowStockSection products={dashboard.lowStockProducts} />
-        </>
+        </ScrollView>
       )}
     </SafeAreaView>
   );
