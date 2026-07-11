@@ -16,6 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import StatsSection from "@/components/dashboard/StatsSection";
 import RecentActivitySection from "@/components/dashboard/RecentActivitySection";
 import LowStockSection from "@/components/dashboard/LowStockSection";
+import { API_BASE_URL } from "@/constants/api";
 
 interface DashboardResponse {
   stats: {
@@ -59,7 +60,7 @@ export default function Dashboard() {
   async function fetchDashboard() {
     try {
       const response = await fetch(
-         "http://localhost:5000/api/dashboard"
+         `${API_BASE_URL}/api/dashboard`
       );
 
       const json = await response.json();

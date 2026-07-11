@@ -1,79 +1,80 @@
-import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
+import { API_BASE_URL } from "@/constants/api";
+import { ProductDropdownProps, ProductSearchItem } from "./interface/types";
 
-interface VariantItem {
-  id: number;
-  sku: string;
-  product: string;
-  color?: string | null;
-  size?: string | null;
-}
-
-interface ProductDropdownProps {
-  value?: VariantItem | null;
-  onSelect: (item: VariantItem | null) => void;
-  error?: string | null;
-}
 
 export default function ProductDropdown({ value, onSelect, error }: ProductDropdownProps) {
+
   const [query, setQuery] = useState("");
-  const [items, setItems] = useState<VariantItem[]>([]);
+  const [items, setItems] = useState<ProductSearchItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
-    let mounted = true;
-
-    async function fetchVariants() {
-      try {
-        setLoading(true);
-        // Try test server first (if running), fall back to real inventory API
-        let json = null;
-        try {
-          const testRes = await fetch("http://localhost:5001/test/search");
-          if (testRes.ok) {
-            json = await testRes.json();
-          }
-        } catch (e) {
-          // ignore test server errors and fallback
-        }
-
-        if (!json) {
-          const res = await fetch("http://localhost:5000/api/inventory?page=1&pageSize=100");
-          json = await res.json();
-        }
-        if (!mounted) return;
-        const list = (json?.data?.items ?? []).map((it: any) => ({
-          id: it.id,
-          sku: it.sku,
-          product: it.product,
-          color: it.color,
-          size: it.size,
-        }));
-        setItems(list);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
-
-    fetchVariants();
-
     return () => {
-      mounted = false;
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
     };
   }, []);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter((it) => it.sku.toLowerCase().includes(q) || it.product.toLowerCase().includes(q));
-  }, [items, query]);
+  function handleSearch(text: string) {
+    setQuery(text);
+    onSelect(null);
 
-  function handleSelect(item: VariantItem) {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    const q = text.trim();
+
+    if (q.length < 2) {
+      setItems([]);
+      setOpen(false);
+      return;
+    }
+
+    setOpen(true);
+
+    debounceRef.current = setTimeout(async () => {
+      setLoading(true);
+
+      try {
+        const response = await fetch( `${API_BASE_URL}/api/products/search?q=${encodeURIComponent(q)}`);
+
+        if (!response.ok) {
+          setItems([]);
+          return;
+        }
+
+        const json = await response.json();
+        setItems(json.data.items ?? []);
+
+      } 
+      catch (error) {
+      console.error(error);
+      setItems([]);
+
+      } finally {
+        setLoading(false);
+      }
+    }, 300);
+  }
+
+  useEffect(() => {
+    if (!value) {
+      setQuery("");
+      setItems([]);
+      setOpen(false);
+    }
+  }, [value]);
+
+  function handleSelect(item: ProductSearchItem) {
     onSelect(item);
-    setQuery(`${item.sku} — ${item.product}`);
+    setQuery(`${item.sku} — ${item.productName}`);
     setOpen(false);
   }
 
@@ -83,11 +84,7 @@ export default function ProductDropdown({ value, onSelect, error }: ProductDropd
 
       <TextInput
         value={query}
-        onChangeText={(t) => {
-          setQuery(t);
-          setOpen(true);
-          if (t === "") onSelect(null);
-        }}
+        onChangeText={handleSearch}
         placeholder="Type SKU or product name"
         style={styles.input}
         onFocus={() => setOpen(true)}
@@ -102,12 +99,12 @@ export default function ProductDropdown({ value, onSelect, error }: ProductDropd
             <ActivityIndicator size="small" color="#2563EB" />
           ) : (
             <FlatList
-              data={filtered}
-              keyExtractor={(item) => String(item.id)}
+              data={items}
+              keyExtractor={(item) => String(item.variantId)}
               renderItem={({ item }) => (
                 <Pressable style={styles.row} onPress={() => handleSelect(item)}>
                   <Text style={styles.rowSku}>{item.sku}</Text>
-                  <Text style={styles.rowProduct}>{item.product}</Text>
+                  <Text style={styles.rowProduct}>{item.productName}</Text>
                 </Pressable>
               )}
               style={{ maxHeight: 220 }}
@@ -117,7 +114,7 @@ export default function ProductDropdown({ value, onSelect, error }: ProductDropd
       )}
 
       {value ? (
-        <Text style={styles.selected}>Selected: {value.sku} — {value.product}</Text>
+        <Text style={styles.selected}>Selected: {value.sku} — {value.productName}</Text>
       ) : null}
     </View>
   );

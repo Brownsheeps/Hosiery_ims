@@ -1,9 +1,5 @@
 import { StyleSheet, Text, TextInput, View } from "react-native";
-
-interface RemarksInputProps {
-  value: string;
-  onChange: (value: string) => void;
-}
+import { RemarksInputProps } from "./interface/types";
 
 export default function RemarksInput({ value, onChange }: RemarksInputProps) {
   return (

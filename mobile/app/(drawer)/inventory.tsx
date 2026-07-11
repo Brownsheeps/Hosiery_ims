@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
 
 import InventoryHeader from "@/components/inventory/InventoryHeader";
+import { API_BASE_URL } from "@/constants/api";
 import InventoryTable from "@/components/inventory/InventoryTable";
 import InventoryToolbar from "@/components/inventory/InventoryToolbar";
 
@@ -48,7 +49,7 @@ export default function Inventory() {
   async function fetchInventory() {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5000/api/inventory?page=${page}&pageSize=20`);
+      const response = await fetch(`${API_BASE_URL}/api/inventory?page=${page}&pageSize=20`);
       const json: InventoryApiResponse = await response.json();
       setItems(json.data.items);
       setPagination(json.data.pagination);

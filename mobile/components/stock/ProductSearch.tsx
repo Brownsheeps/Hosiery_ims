@@ -1,11 +1,6 @@
 import { useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
-
-interface ProductSearchProps {
-  value: string;
-  onChange: (value: string) => void;
-  error?: string | null;
-}
+import { ProductSearchProps } from "./interface/types";
 
 export default function ProductSearch({ value, onChange, error }: ProductSearchProps) {
   const [focused, setFocused] = useState(false);

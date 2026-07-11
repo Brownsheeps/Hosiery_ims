@@ -4,27 +4,11 @@ import ProductDropdown from "@/components/stock/ProductDropdown";
 import QuantityInput from "@/components/stock/QuantityInput";
 import RemarksInput from "@/components/stock/RemarksInput";
 import LoadingStockIn from "@/components/stock/LoadingStockIn";
-
-interface StockInResponse {
-  success: boolean;
-  message: string;
-  data: {
-    id: number;
-    quantity: number;
-    variant: {
-      id: number;
-      sku: string;
-      product: { product_name: string };
-    };
-  };
-}
+import { API_BASE_URL } from "@/constants/api";
+import { ProductSearchItem, StockInResponse } from "./interface/types";
 
 export default function StockInForm() {
-  const [selectedVariant, setSelectedVariant] = useState<{
-    id: number;
-    sku: string;
-    product: string;
-  } | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState< ProductSearchItem | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [remarks, setRemarks] = useState("");
   const [loading, setLoading] = useState(false);
@@ -52,7 +36,7 @@ export default function StockInForm() {
     try {
       const payload = selectedVariant
         ? {
-            variantId: selectedVariant.id,
+            variantId: selectedVariant.variantId,
             quantity,
             remarks: remarks || null,
           }
@@ -65,7 +49,7 @@ export default function StockInForm() {
       const payloadToSend = payload;
       console.log("[StockIn] Sending payload:", payloadToSend);
 
-      const res = await fetch("http://localhost:5000/api/stock/in", {
+      const res = await fetch(`${API_BASE_URL}/api/stock/in`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,11 +1,6 @@
 import { useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
-
-interface QuantityInputProps {
-  value: number;
-  onChange: (value: number) => void;
-  error?: string | null;
-}
+import { QuantityInputProps } from "./interface/types";
 
 export default function QuantityInput({ value, onChange, error }: QuantityInputProps) {
   const [text, setText] = useState(String(value || ""));
