@@ -1,15 +1,20 @@
 import { useState } from "react";
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import ProductDropdown from "@/components/stock/ProductDropdown";
 import QuantityInput from "@/components/stock/QuantityInput";
 import RemarksInput from "@/components/stock/RemarksInput";
 import LoadingStockIn from "@/components/stock/LoadingStockIn";
 import { API_BASE_URL } from "@/constants/api";
-import { ProductSearchItem, StockInResponse } from "./interface/types";
+import { ProductSearchItem, QuantityValueState, StockInResponse } from "./interface/types";
 
 export default function StockInForm() {
-  const [selectedVariant, setSelectedVariant] = useState< ProductSearchItem | null>(null);
-  const [quantity, setQuantity] = useState(1);
+  const [selectedVariant, setSelectedVariant] = useState<ProductSearchItem | null>(null);
+  const [quantityValues, setQuantityValues] = useState<QuantityValueState>({
+    boxQuantity: 0,
+    unitsPerBox: 0,
+    looseUnits: 1,
+    totalQuantity: 1,
+  });
   const [remarks, setRemarks] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ product?: string; quantity?: string } | null>(null);
@@ -21,7 +26,9 @@ export default function StockInForm() {
       nextErrors.product = "Please select a product variant.";
     }
 
-    if (!quantity || quantity < 1) {
+    if (quantityValues.boxQuantity > 0 && quantityValues.unitsPerBox <= 0) {
+      nextErrors.quantity = "Units per box must be at least 1 when box quantity is greater than 0.";
+    } else if (quantityValues.totalQuantity <= 0) {
       nextErrors.quantity = "Quantity must be at least 1.";
     }
 
@@ -30,19 +37,17 @@ export default function StockInForm() {
       return;
     }
 
-    setErrors(null);
     setLoading(true);
 
     try {
       const payload = selectedVariant
         ? {
             variantId: selectedVariant.variantId,
-            quantity,
+            quantity: quantityValues.totalQuantity,
             remarks: remarks || null,
           }
         : {
-
-            quantity,
+            quantity: quantityValues.totalQuantity,
             remarks: remarks || null,
           };
 
@@ -67,9 +72,9 @@ export default function StockInForm() {
       }
 
       Alert.alert("Success", json.message || "Stock in recorded");
-      // clear form
+      setErrors(null);
       setSelectedVariant(null);
-      setQuantity(1);
+      setQuantityValues({ boxQuantity: 0, unitsPerBox: 0, looseUnits: 0, totalQuantity: 0 });
       setRemarks("");
     } catch (error: any) {
       console.error(error);
@@ -83,7 +88,7 @@ export default function StockInForm() {
     <View>
       <ProductDropdown value={selectedVariant} onSelect={setSelectedVariant} error={errors?.product ?? null} />
 
-      <QuantityInput value={quantity} onChange={setQuantity} error={errors?.quantity ?? null} />
+      <QuantityInput value={quantityValues} onChange={setQuantityValues} error={errors?.quantity ?? null} />
 
       <RemarksInput value={remarks} onChange={setRemarks} />
 

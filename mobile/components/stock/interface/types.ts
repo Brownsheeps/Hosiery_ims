@@ -19,9 +19,16 @@ export interface ProductSearchProps {
   error?: string | null;
 }
 
+export interface QuantityValueState {
+  boxQuantity: number;
+  unitsPerBox: number;
+  looseUnits: number;
+  totalQuantity: number;
+}
+
 export interface QuantityInputProps {
-  value: number;
-  onChange: (value: number) => void;
+  value: QuantityValueState;
+  onChange: (value: QuantityValueState) => void;
   error?: string | null;
 }
 

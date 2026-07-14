@@ -1,5 +1,5 @@
 import ReportsScreen from "@/components/reports/ReportsScreen";
 
-export default function Reports() {
+export default function ReportsTabScreen() {
   return <ReportsScreen />;
 }

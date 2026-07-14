@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useClerk } from "@clerk/expo";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   ScrollView,
 } from "react-native";
-import { DrawerActions } from "@react-navigation/native";
+import { DrawerActions, useFocusEffect } from "@react-navigation/native";
 import { useNavigation } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -53,19 +53,11 @@ export default function Dashboard() {
 
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchDashboard();
-  }, []);
-
-  async function fetchDashboard() {
+  const fetchDashboard = useCallback(async () => {
     try {
-      const response = await fetch(
-         `${API_BASE_URL}/api/dashboard`
-      );
+      const response = await fetch(`${API_BASE_URL}/api/dashboard`);
 
       const json = await response.json();
-
-      console.log(json);
 
       setDashboard(json.data);
     } catch (error) {
@@ -73,7 +65,14 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      void fetchDashboard();
+    }, [fetchDashboard]),
+  );
 
   if (loading) {
     return (
