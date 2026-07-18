@@ -102,6 +102,20 @@ export default function DrawerLayout() {
       />
 
       <Drawer.Screen
+        name="stock-adjustment"
+        options={{
+          title: "Stock Adjustment",
+          drawerIcon: ({ color, size }) => (
+            <Ionicons
+              name="create-outline"
+              color={color}
+              size={size}
+            />
+          ),
+        }}
+      />
+
+      <Drawer.Screen
         name="reports"
         options={{
           title: "Reports",

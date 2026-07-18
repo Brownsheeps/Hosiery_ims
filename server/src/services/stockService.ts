@@ -117,3 +117,58 @@ export async function stockOut(data: StockMovementInput) {
     });
   });
 }
+
+export async function stockAdjust(data: StockMovementInput) {
+  return prisma.$transaction(async (tx) => {
+    const variant = await tx.product_variants.findFirst({
+      where: variantWhere(data),
+      select: {
+        id: true,
+      },
+    });
+
+    if (!variant) {
+      throw appError("Product variant not found", 404);
+    }
+
+    // Get current inventory (if any)
+    const inventory = await tx.inventory.findUnique({
+      where: {
+        variant_id: variant.id,
+      },
+      select: {
+        quantity: true,
+      },
+    });
+
+    const currentStock = inventory?.quantity ?? 0;
+    const difference = data.quantity - currentStock;
+
+    // Update inventory (or create if it doesn't exist)
+    const updatedInventory = await tx.inventory.upsert({
+      where: {
+        variant_id: variant.id,
+      },
+      update: {
+        quantity: data.quantity,
+      },
+      create: {
+        variant_id: variant.id,
+        quantity: data.quantity,
+      },
+      select: stockSelect,
+    });
+
+    // Record adjustment transaction
+    await tx.inventory_transactions.create({
+      data: {
+        variant_id: variant.id,
+        txn_type: TransactionType.ADJUSTMENT,
+        quantity: difference,
+        remarks: data.remarks,
+      },
+    });
+
+    return updatedInventory;
+  });
+}

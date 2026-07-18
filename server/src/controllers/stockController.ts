@@ -43,3 +43,12 @@ export async function stockOut(
         next(error);
     }
 }
+
+export async function stockAdjust(
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> {
+    const data = await stockService.stockAdjust(getStockMovementBody(req));
+    sendSuccess(res, data, "Stock adjustment recorded successfully", 201);
+}

@@ -65,11 +65,15 @@ export default function ProductDropdown({ value, onSelect, error }: ProductDropd
   }
 
   useEffect(() => {
-    if (!value) {
-      setQuery("");
-      setItems([]);
+    if (value) {
+      setQuery(`${value.sku} — ${value.productName}`);
       setOpen(false);
+      return;
     }
+
+    setQuery("");
+    setItems([]);
+    setOpen(false);
   }, [value]);
 
   function handleSelect(item: ProductSearchItem) {

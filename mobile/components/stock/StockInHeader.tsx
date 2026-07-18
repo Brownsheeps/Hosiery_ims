@@ -3,7 +3,12 @@ import { DrawerActions } from "@react-navigation/native";
 import { useNavigation } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-export default function StockInHeader() {
+interface StockInHeaderProps {
+  title?: string;
+  subtitle?: string;
+}
+
+export default function StockInHeader({ title = "Stock In", subtitle = "Record inward stock" }: StockInHeaderProps) {
   const navigation = useNavigation();
 
   return (
@@ -16,8 +21,8 @@ export default function StockInHeader() {
       </Pressable>
 
       <View style={styles.titleContainer}>
-        <Text style={styles.title}>Stock In</Text>
-        <Text style={styles.subtitle}>Record inward stock</Text>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.subtitle}>{subtitle}</Text>
       </View>
 
       <View style={{ width: 48 }} />

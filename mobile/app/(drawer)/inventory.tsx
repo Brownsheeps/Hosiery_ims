@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 
 import InventoryHeader from "@/components/inventory/InventoryHeader";
 import { API_BASE_URL } from "@/constants/api";
@@ -33,17 +35,14 @@ interface InventoryApiResponse {
 const PAGE_SIZE = 20;
 
 export default function Inventory() {
+  const router = useRouter();
   const [searchValue, setSearchValue] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [allItems, setAllItems] = useState<InventoryApiResponse["data"]["items"]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    void fetchInventory();
-  }, []);
-
-  async function fetchInventory() {
+  const fetchInventory = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -69,7 +68,17 @@ export default function Inventory() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    void fetchInventory();
+  }, [fetchInventory]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void fetchInventory();
+    }, [fetchInventory]),
+  );
 
   const categories = useMemo<CategoryOption[]>(() => {
     const uniqueProducts = Array.from(new Set(allItems.map((item) => item.product).filter(Boolean)));
@@ -137,6 +146,20 @@ export default function Inventory() {
     setPage(1);
   }
 
+  function handleAdjustItem(item: InventoryApiResponse["data"]["items"][number]) {
+    router.push({
+      pathname: "/(drawer)/stock-adjustment" as never,
+      params: {
+        variantId: String(item.id),
+        sku: item.sku,
+        product: item.product,
+        color: item.color ?? "",
+        size: item.size ?? "",
+        currentStock: String(item.stock),
+      },
+    });
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <InventoryHeader totalItems={pagination.totalItems} totalCount={pagination.totalItems} onExport={() => {}} />
@@ -148,7 +171,7 @@ export default function Inventory() {
         onCategoryChange={handleCategoryChange}
       />
 
-      <InventoryTable items={visibleItems} loading={loading} />
+      <InventoryTable items={visibleItems} loading={loading} onAdjust={handleAdjustItem} />
 
       <View style={styles.paginationRow}>
         <Pressable

@@ -4,3 +4,5 @@ export interface StockMovementInput {
   quantity: number;
   remarks: string | null;
 }
+
+

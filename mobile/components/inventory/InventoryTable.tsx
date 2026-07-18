@@ -7,9 +7,10 @@ import LoadingInventory from "./LoadingInventory";
 interface InventoryTableProps {
   items: InventoryItemRow[];
   loading: boolean;
+  onAdjust?: (item: InventoryItemRow) => void;
 }
 
-export default function InventoryTable({ items, loading }: InventoryTableProps) {
+export default function InventoryTable({ items, loading, onAdjust }: InventoryTableProps) {
   if (loading) {
     return <LoadingInventory />;
   }
@@ -30,11 +31,12 @@ export default function InventoryTable({ items, loading }: InventoryTableProps) 
             <Text style={styles.headerCell}>PURCHASE</Text>
             <Text style={styles.headerCell}>SELLING</Text>
             <Text style={styles.headerCell}>STOCK</Text>
+            <Text style={styles.headerActionCell}>ACTION</Text>
           </View>
 
           <ScrollView style={styles.bodyScroll} nestedScrollEnabled>
             {items.map((item) => (
-              <InventoryRow key={item.id} item={item} />
+              <InventoryRow key={item.id} item={item} onAdjust={onAdjust} />
             ))}
           </ScrollView>
         </View>
@@ -54,7 +56,7 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   table: {
-    minWidth: 900,
+    minWidth: 1080,
   },
   headerRow: {
     flexDirection: "row",
@@ -64,12 +66,20 @@ const styles = StyleSheet.create({
     borderBottomColor: "#E5E7EB",
   },
   headerCell: {
- width: 140,
-  fontSize: 12,
-  fontWeight: "700",
-  color: "#6B7280",
-  textTransform: "uppercase",
-  paddingRight: 8,
+    width: 140,
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#6B7280",
+    textTransform: "uppercase",
+    paddingRight: 8,
+  },
+  headerActionCell: {
+    width: 100,
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#6B7280",
+    textTransform: "uppercase",
+    textAlign: "center",
   },
   bodyScroll: {
     maxHeight: 420,

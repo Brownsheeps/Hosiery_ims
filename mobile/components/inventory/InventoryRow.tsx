@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import StockBadge from "./StockBadge";
 
@@ -15,9 +15,10 @@ export interface InventoryItemRow {
 
 interface InventoryRowProps {
   item: InventoryItemRow;
+  onAdjust?: (item: InventoryItemRow) => void;
 }
 
-export default function InventoryRow({ item }: InventoryRowProps) {
+export default function InventoryRow({ item, onAdjust }: InventoryRowProps) {
   return (
     <View style={styles.row}>
       <Text
@@ -43,6 +44,11 @@ export default function InventoryRow({ item }: InventoryRowProps) {
       <Text style={styles.cell}>{formatCurrency(item.purchasePrice)}</Text>
       <Text style={styles.cell}>{formatCurrency(item.sellingPrice)}</Text>
       <StockBadge stock={item.stock} />
+      <View style={styles.actionCell}>
+        <Pressable style={styles.adjustButton} onPress={() => onAdjust?.(item)}>
+          <Text style={styles.adjustButtonText}>Adjust</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -65,9 +71,24 @@ const styles = StyleSheet.create({
     minHeight: 48,
   },
   cell: {
-  width: 140,
-  fontSize: 13,
-  color: "#374151",
-  paddingRight: 8,
+    width: 140,
+    fontSize: 13,
+    color: "#374151",
+    paddingRight: 8,
+  },
+  actionCell: {
+    width: 100,
+    alignItems: "center",
+  },
+  adjustButton: {
+    backgroundColor: "#2563EB",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  adjustButtonText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "700",
   },
 });
