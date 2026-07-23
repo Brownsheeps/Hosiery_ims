@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { Alert, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { generateInvoiceHtml } from "@/components/invoice/invoiceTemplate";
+import { exportPdf } from "@/constants/pdfService";
 
 import InvoiceRow, { type InvoiceProductOption, type InvoiceRowData } from "@/components/invoice/InvoiceRow";
 import InvoiceSummary from "@/components/invoice/InvoiceSummary";
@@ -30,6 +32,26 @@ export default function InvoiceScreen() {
     ));
   }
 
+  async function handleExportPdf() {
+  if (rows.length === 0) {
+    Alert.alert("No Products", "Please add products first.");
+    return;
+  }
+
+  try {
+    const html = generateInvoiceHtml({
+      rows,
+      grandTotal: totals.grandTotal,
+    });
+
+    await exportPdf(html);
+
+  } catch (error) {
+    console.error(error);
+    Alert.alert("Error", "Unable to export invoice.");
+  }
+}
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -46,7 +68,7 @@ export default function InvoiceScreen() {
         ))}
         {rows.length > 0 ? <View style={styles.actionsSection}>
           <InvoiceSummary subtotal={totals.subtotal} grandTotal={totals.grandTotal} />
-          <Pressable style={styles.exportButton} onPress={() => Alert.alert("Coming Soon", "PDF export will be available soon.")}><Text style={styles.exportButtonText}>Export PDF</Text></Pressable>
+          <Pressable style={styles.exportButton} onPress={handleExportPdf}><Text style={styles.exportButtonText}>Export PDF</Text></Pressable>
         </View> : null}
       </ScrollView>
     </SafeAreaView>
