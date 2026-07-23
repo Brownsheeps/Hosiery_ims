@@ -6,6 +6,7 @@ import { exportPdf } from "@/constants/pdfService";
 
 import InvoiceRow, { type InvoiceProductOption, type InvoiceRowData } from "@/components/invoice/InvoiceRow";
 import InvoiceSummary from "@/components/invoice/InvoiceSummary";
+import StockInHeader from "@/components/stock/StockInHeader";
 
 function createEmptyRow(id: string): InvoiceRowData {
   return { id, product: null, rate: 0, quantity: 1, total: 0 };
@@ -55,11 +56,7 @@ export default function InvoiceScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.headerRow}><Text style={styles.title}>Invoice</Text></View>
-        <View style={styles.tableHeader}>
-          <Text style={styles.headerCell}>Item</Text><Text style={styles.headerCell}>Rate</Text>
-          <Text style={styles.headerCell}>Quantity</Text><Text style={styles.headerCell}>Total</Text>
-        </View>
+        <StockInHeader title="Invoice" subtitle="" />
         <Pressable style={styles.addButton} onPress={() => setRows((current) => [...current, createEmptyRow(`row-${Date.now()}-${Math.random()}`)])}>
           <Ionicons name="add-circle-outline" size={18} color="#FFFFFF" /><Text style={styles.addButtonText}>Add Product</Text>
         </Pressable>
@@ -77,9 +74,6 @@ export default function InvoiceScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F8FAFC" }, content: { padding: 20, paddingBottom: 40 },
-  headerRow: { marginBottom: 16 }, title: { fontSize: 28, fontWeight: "700", color: "#0F172A" },
-  tableHeader: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 6, marginBottom: 12 },
-  headerCell: { flex: 1, fontSize: 12, fontWeight: "700", color: "#64748B", textAlign: "center" },
   addButton: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "#2563EB", borderRadius: 12, paddingVertical: 12, marginBottom: 16, gap: 8 },
   addButtonText: { color: "#FFFFFF", fontSize: 15, fontWeight: "700" }, actionsSection: { gap: 12, marginTop: 8 },
   exportButton: { backgroundColor: "#0F172A", paddingVertical: 14, borderRadius: 12, alignItems: "center" }, exportButtonText: { color: "#FFFFFF", fontSize: 15, fontWeight: "700" },

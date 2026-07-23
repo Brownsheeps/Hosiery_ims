@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useClerk } from "@clerk/expo";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -7,9 +7,10 @@ import {
   Text,
   View,
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
 } from "react-native";
-import { DrawerActions, useFocusEffect } from "@react-navigation/native";
+import { DrawerActions } from "@react-navigation/native";
 import { useNavigation } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -52,8 +53,19 @@ export default function Dashboard() {
     useState<DashboardResponse | null>(null);
 
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const isFetchingRef = useRef(false);
 
-  const fetchDashboard = useCallback(async () => {
+  const fetchDashboard = useCallback(async (isManualRefresh = false) => {
+    if (isFetchingRef.current) {
+      return;
+    }
+
+    isFetchingRef.current = true;
+    if (isManualRefresh) {
+      setRefreshing(true);
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/dashboard`);
 
@@ -64,15 +76,20 @@ export default function Dashboard() {
       console.error(error);
     } finally {
       setLoading(false);
+      if (isManualRefresh) {
+        setRefreshing(false);
+      }
+      isFetchingRef.current = false;
     }
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      setLoading(true);
-      void fetchDashboard();
-    }, [fetchDashboard]),
-  );
+  useEffect(() => {
+    void fetchDashboard();
+  }, [fetchDashboard]);
+
+  const handleRefresh = useCallback(() => {
+    void fetchDashboard(true);
+  }, [fetchDashboard]);
 
   if (loading) {
     return (
@@ -93,6 +110,7 @@ export default function Dashboard() {
           contentContainerStyle={{ paddingBottom: 40 }}
           nestedScrollEnabled={true}
           showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#2563EB" />}
         >
           <View style={styles.header}>
             <Pressable

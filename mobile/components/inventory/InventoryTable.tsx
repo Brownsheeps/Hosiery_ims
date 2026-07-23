@@ -21,7 +21,12 @@ export default function InventoryTable({ items, loading, onAdjust }: InventoryTa
 
   return (
     <View style={styles.container}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <ScrollView
+        horizontal
+        style={styles.horizontalScroll}
+        contentContainerStyle={styles.horizontalScrollContent}
+        showsHorizontalScrollIndicator={false}
+      >
         <View style={styles.table}>
           <View style={styles.headerRow}>
             <Text style={styles.headerCell}>SKU</Text>
@@ -48,7 +53,6 @@ export default function InventoryTable({ items, loading, onAdjust }: InventoryTa
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    minHeight: 420,
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
     borderWidth: 1,
@@ -57,6 +61,7 @@ const styles = StyleSheet.create({
   },
   table: {
     minWidth: 1080,
+    flex: 1,
   },
   headerRow: {
     flexDirection: "row",
@@ -82,6 +87,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   bodyScroll: {
-    maxHeight: 420,
+    flex: 1,
+  },
+  horizontalScroll: {
+    flex: 1,
+  },
+  horizontalScrollContent: {
+    flexGrow: 1,
   },
 });

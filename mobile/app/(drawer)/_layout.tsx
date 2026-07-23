@@ -74,6 +74,16 @@ export default function DrawerLayout() {
       />
 
       <Drawer.Screen
+        name="add-product"
+        options={{
+          title: "Add Product",
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="add-circle-outline" color={color} size={size} />
+          ),
+        }}
+      />
+
+      <Drawer.Screen
         name="stock-in"
         options={{
           title: "Stock In",

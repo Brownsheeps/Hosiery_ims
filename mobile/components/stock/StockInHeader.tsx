@@ -22,7 +22,7 @@ export default function StockInHeader({ title = "Stock In", subtitle = "Record i
 
       <View style={styles.titleContainer}>
         <Text style={styles.title}>{title}</Text>
-        <Text style={styles.subtitle}>{subtitle}</Text>
+        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
       </View>
 
       <View style={{ width: 48 }} />

@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { Alert, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import StockInHeader from "@/components/stock/StockInHeader";
-import ProductDropdown from "@/components/stock/ProductDropdown";
 import { API_BASE_URL } from "@/constants/api";
 import type { ProductSearchItem } from "@/components/stock/interface/types";
 
@@ -51,10 +50,10 @@ export default function StockAdjustment() {
     };
   }, [params.color, params.currentStock, params.product, params.size, params.sku, params.variantId]);
 
-  const [selectedVariant, setSelectedVariant] = useState<ProductSearchItem | null>(initialVariant);
+  const selectedVariant = initialVariant;
   const [form, setForm] = useState<AdjustmentFormState>({ actualStock: "", remarks: "" });
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ actualStock?: string; product?: string }>({});
+  const [errors, setErrors] = useState<{ actualStock?: string }>({});
 
   const currentStock = useMemo(() => selectedVariant?.currentStock ?? Number(params.currentStock ?? 0), [params.currentStock, selectedVariant]);
   const isValid = useMemo(() => {
@@ -76,11 +75,12 @@ export default function StockAdjustment() {
   }
 
   function validate() {
-    const nextErrors: { actualStock?: string; product?: string } = {};
+    const nextErrors: { actualStock?: string } = {};
     const actualStockValue = Number(form.actualStock);
 
     if (!selectedVariant) {
-      nextErrors.product = "Please select a product.";
+      Alert.alert("Error", "Please open Stock Adjustment from an inventory item.");
+      return false;
     }
 
     if (form.actualStock.trim() === "") {
@@ -129,7 +129,6 @@ export default function StockAdjustment() {
 
       Alert.alert("Success", json.message || "Stock adjustment recorded");
       setForm({ actualStock: "", remarks: "" });
-      setSelectedVariant(null);
       router.replace("/(drawer)/inventory");
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -147,8 +146,6 @@ export default function StockAdjustment() {
       <StockInHeader title="Stock Adjustment" subtitle="Record a stock count adjustment" />
 
       <View style={styles.card}>
-        <ProductDropdown value={selectedVariant} onSelect={setSelectedVariant} error={errors.product ?? null} />
-
         <View style={styles.infoRow}>
           <Text style={styles.label}>SKU</Text>
           <Text style={styles.value}>{selectedVariant?.sku ?? params.sku ?? "-"}</Text>
