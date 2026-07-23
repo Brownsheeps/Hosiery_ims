@@ -58,11 +58,11 @@ export async function getExportData(type: string) {
             },
             select: {
                 sku: true,
+                min_stock: true,
 
                 product: {
                 select: {
-                    product_name: true,
-                    min_stock: true,
+                    product_name: true
                 },
                 },
 
@@ -76,7 +76,7 @@ export async function getExportData(type: string) {
 
         const lowStock = data.filter(item => {
             const stock = item.inventory?.quantity ?? 0;
-            const minStock = item.product.min_stock ?? 0;
+            const minStock = item.min_stock ?? 0;
 
             return stock <= minStock;
         });
@@ -85,7 +85,7 @@ export async function getExportData(type: string) {
             sku: item.sku,
             product: item.product.product_name,
             stock: item.inventory?.quantity ?? 0,
-            minStock: item.product.min_stock ?? 0,
+            minStock: item.min_stock ?? 0,
         }));
                 
 

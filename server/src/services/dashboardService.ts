@@ -36,6 +36,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       },
       select: {
         sku: true,
+        min_stock: true,
         inventory: {
           select: {
             quantity: true,
@@ -44,8 +45,7 @@ export async function getDashboardData(): Promise<DashboardData> {
         product: {
           select: {
             id: true,
-            product_name: true,
-            min_stock: true,
+            product_name: true
           },
         },
       },
@@ -81,7 +81,7 @@ export async function getDashboardData(): Promise<DashboardData> {
 
   const lowStockList = lowStockCandidates.filter((item) => {
     const quantity = item.inventory?.quantity ?? 0;
-    const minStock = item.product.min_stock ?? 0;
+    const minStock = item.min_stock ?? 0;
     return quantity <= minStock;
   });
 
@@ -93,7 +93,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       sku: item.sku,
       itemName: item.product.product_name,
       currentStock: item.inventory?.quantity ?? 0,
-      minStock: item.product.min_stock ?? 0,
+      minStock: item.min_stock ?? 0,
     }));
 
   const formattedTransactions: RecentTransactionData[] = recentTransactions.map((t) => ({

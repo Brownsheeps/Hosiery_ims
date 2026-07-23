@@ -19,14 +19,10 @@ export async function getReportData(params: {
 
     prisma.product_variants.findMany({
       select: {
+        min_stock: true,
         inventory: {
           select: {
             quantity: true,
-          },
-        },
-        product: {
-          select: {
-            min_stock: true,
           },
         },
       },
@@ -65,7 +61,7 @@ export async function getReportData(params: {
 
   const lowStock = lowStockVariants.filter((item) => {
     const stock = item.inventory?.quantity ?? 0;
-    const minStock = item.product.min_stock ?? 0;
+    const minStock = item.min_stock ?? 0;
 
     return stock > 0 && stock <= minStock;
   }).length;
