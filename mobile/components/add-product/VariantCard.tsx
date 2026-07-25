@@ -2,19 +2,53 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import FormField from "@/components/add-product/FormField";
 import SelectField from "@/components/add-product/SelectField";
-import type { ProductVariant } from "@/components/add-product/types";
+import type { MetaOption, ProductVariant } from "@/components/add-product/types";
 
-interface VariantCardProps { index: number; variant: ProductVariant; colours: string[]; sizes: string[]; onChange: (value: ProductVariant) => void; onDelete: () => void; onCreateColour: (value: string) => void; onCreateSize: (value: string) => void; }
+interface Props {
+  index: number;
+  variant: ProductVariant;
+  colours: MetaOption[];
+  sizes: MetaOption[];
+  onChange: (value: ProductVariant) => void;
+  onDelete: () => void;
+  onAddColour: (option: MetaOption) => void;
+  onAddSize: (option: MetaOption) => void;
+}
 
-export default function VariantCard({ index, variant, colours, sizes, onChange, onDelete, onCreateColour, onCreateSize }: VariantCardProps) {
-  const update = (field: keyof ProductVariant, value: string) => onChange({ ...variant, [field]: value });
-  return <View style={styles.card}>
-    <View style={styles.cardHeader}><Text style={styles.title}>Variant {index + 1}</Text><Pressable onPress={onDelete} accessibilityLabel={`Delete variant ${index + 1}`} hitSlop={8}><Ionicons name="trash-outline" size={20} color="#DC2626" /></Pressable></View>
-    <View style={styles.row}><SelectField label="Colour" value={variant.colour} onChange={(value) => update("colour", value)} onCreateOption={onCreateColour} placeholder="Select colour" options={colours} /><View style={styles.gap} /><SelectField label="Size" value={variant.size} onChange={(value) => update("size", value)} onCreateOption={onCreateSize} placeholder="Select size" options={sizes} /></View>
-    <FormField label="Opening Stock" value={variant.openingStock} onChangeText={(value) => update("openingStock", value)} placeholder="0" keyboardType="numeric" />
-    <View style={styles.row}><FormField label="Purchase Price" value={variant.purchasePrice} onChangeText={(value) => update("purchasePrice", value)} placeholder="0.00" keyboardType="numeric" /><View style={styles.gap} /><FormField label="Selling Price" value={variant.sellingPrice} onChangeText={(value) => update("sellingPrice", value)} placeholder="0.00" keyboardType="numeric" /></View>
-    <FormField label="Variant SKU" value={variant.sku} onChangeText={(value) => update("sku", value)} placeholder="Enter variant SKU" />
-  </View>;
+export default function VariantCard({ index, variant, colours, sizes, onChange, onDelete, onAddColour, onAddSize }: Props) {
+  const update = (field: keyof ProductVariant, value: unknown) => onChange({ ...variant, [field]: value });
+
+  function handleColour(option: MetaOption) {
+    if (option.isNew) onAddColour(option);
+    update("colour", option);
+  }
+  function handleSize(option: MetaOption) {
+    if (option.isNew) onAddSize(option);
+    update("size", option);
+  }
+
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <Text style={styles.title}>Variant {index + 1}</Text>
+        <Pressable onPress={onDelete} hitSlop={8}>
+          <Ionicons name="trash-outline" size={20} color="#DC2626" />
+        </Pressable>
+      </View>
+      <View style={styles.row}>
+        <SelectField label="Colour" value={variant.colour} onChange={handleColour} placeholder="Select colour" options={colours} codeField="colourCode" />
+        <View style={styles.gap} />
+        <SelectField label="Size" value={variant.size} onChange={handleSize} placeholder="Select size" options={sizes} codeField="sizeCode" />
+      </View>
+      <FormField label="Opening Stock" value={variant.openingStock} onChangeText={(v) => update("openingStock", v)} placeholder="0" keyboardType="numeric" />
+      <View style={styles.row}>
+        <FormField label="Purchase Price" value={variant.purchasePrice} onChangeText={(v) => update("purchasePrice", v)} placeholder="0.00" keyboardType="numeric" />
+        <View style={styles.gap} />
+        <FormField label="Selling Price" value={variant.sellingPrice} onChangeText={(v) => update("sellingPrice", v)} placeholder="0.00" keyboardType="numeric" />
+      </View>
+      <FormField label="Min Stock" value={variant.minStock} onChangeText={(v) => update("minStock", v)} placeholder="0" keyboardType="numeric" />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
