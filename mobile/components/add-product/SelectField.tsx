@@ -1,49 +1,50 @@
 import { useState } from "react";
 import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import type { MetaOption } from "@/components/add-product/types";
+
+type CodeField = "brandCode" | "colourCode" | "sizeCode";
 
 interface SelectFieldProps {
   label: string;
-  value: string;
+  value: MetaOption | null;
   placeholder: string;
-  options: string[];
-  onChange: (value: string) => void;
-  onCreateOption: (value: string) => void;
+  options: MetaOption[];
+  onChange: (value: MetaOption) => void;
+  codeField?: CodeField; // if set, auto-derive code when creating new
 }
 
-export default function SelectField({ label, value, placeholder, options, onChange, onCreateOption }: SelectFieldProps) {
+
+export default function SelectField({ label, value, placeholder, options, onChange, codeField }: SelectFieldProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const normalizedQuery = query.trim().toLowerCase();
-  const filteredOptions = options.filter((option) => option.toLowerCase().includes(normalizedQuery));
-  const canCreate = query.trim().length > 0 && !options.some((option) => option.toLowerCase() === normalizedQuery);
+  const q = query.trim().toLowerCase();
+  const filtered = options.filter((o) => o.name.toLowerCase().includes(q));
+  const canCreate = query.trim().length > 0 && !options.some((o) => o.name.toLowerCase() === q);
 
-  function closeMenu() {
-    setOpen(false);
-    setQuery("");
-  }
+  function close() { setOpen(false); setQuery(""); }
 
-  function selectOption(option: string) {
+  function select(option: MetaOption) { onChange(option); close(); }
+
+  function create() {
+    const name = query.trim();
+    // Auto-derive code: first 3 non-space chars, uppercase
+    const derivedCode = name.replace(/\s+/g, "").slice(0, 3).toUpperCase();
+    const option: MetaOption = { id: null, name, isNew: true };
+    if (codeField) (option as any)[codeField] = derivedCode;
     onChange(option);
-    closeMenu();
-  }
-
-  function createOption() {
-    const newOption = query.trim();
-    onCreateOption(newOption);
-    onChange(newOption);
-    closeMenu();
+    close();
   }
 
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
       <Pressable style={styles.select} onPress={() => setOpen(true)}>
-        <Text style={[styles.value, !value && styles.placeholder]}>{value || placeholder}</Text>
+        <Text style={[styles.value, !value && styles.placeholder]}>{value?.name || placeholder}</Text>
         <Ionicons name="chevron-down-outline" size={18} color="#64748B" />
       </Pressable>
-      <Modal transparent visible={open} animationType="fade" onRequestClose={closeMenu}>
-        <Pressable style={styles.backdrop} onPress={closeMenu}>
+      <Modal transparent visible={open} animationType="fade" onRequestClose={close}>
+        <Pressable style={styles.backdrop} onPress={close}>
           <View style={styles.menu} onStartShouldSetResponder={() => true}>
             <Text style={styles.menuTitle}>{label}</Text>
             <View style={styles.searchBox}>
@@ -51,17 +52,22 @@ export default function SelectField({ label, value, placeholder, options, onChan
               <TextInput value={query} onChangeText={setQuery} autoFocus placeholder={`Search ${label.toLowerCase()}`} placeholderTextColor="#94A3B8" style={styles.searchInput} />
             </View>
             <FlatList
-              data={filteredOptions}
-              keyExtractor={(option) => option}
+              data={filtered}
+              keyExtractor={(o) => String(o.id ?? o.name)}
               ListEmptyComponent={<Text style={styles.emptyText}>No results found</Text>}
               renderItem={({ item }) => (
-                <Pressable style={styles.option} onPress={() => selectOption(item)}>
-                  <Text style={styles.optionText}>{item}</Text>
-                  {item === value ? <Ionicons name="checkmark" size={18} color="#2563EB" /> : null}
+                <Pressable style={styles.option} onPress={() => select(item)}>
+                  <Text style={styles.optionText}>{item.name}</Text>
+                  {item.name === value?.name ? <Ionicons name="checkmark" size={18} color="#2563EB" /> : null}
                 </Pressable>
               )}
             />
-            {canCreate ? <Pressable style={styles.createOption} onPress={createOption}><Ionicons name="add" size={18} color="#2563EB" /><Text style={styles.createText}>{`Add new ${label.toLowerCase()}: "${query.trim()}"`}</Text></Pressable> : null}
+            {canCreate ? (
+              <Pressable style={styles.createOption} onPress={create}>
+                <Ionicons name="add" size={18} color="#2563EB" />
+                <Text style={styles.createText}>{`Add "${query.trim()}"`}</Text>
+              </Pressable>
+            ) : null}
           </View>
         </Pressable>
       </Modal>

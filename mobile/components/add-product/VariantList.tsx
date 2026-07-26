@@ -1,20 +1,42 @@
-import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import VariantCard from "@/components/add-product/VariantCard";
-import type { ProductVariant } from "@/components/add-product/types";
+import type { MetaOption, ProductVariant, ProductMetadata } from "@/components/add-product/types";
 
-interface VariantListProps { variants: ProductVariant[]; onChange: (id: string, value: ProductVariant) => void; onAdd: () => void; onDelete: (id: string) => void; }
+interface Props {
+  variants: ProductVariant[];
+  metadata: Pick<ProductMetadata, "colours" | "sizes">;
+  onChange: (id: string, value: ProductVariant) => void;
+  onAdd: () => void;
+  onDelete: (id: string) => void;
+  onAddOption: (field: "colours" | "sizes", option: MetaOption) => void;
+}
 
-export default function VariantList({ variants, onChange, onAdd, onDelete }: VariantListProps) {
-  const [colours, setColours] = useState(["Black", "White", "Blue", "Grey", "Red"]);
-  const [sizes, setSizes] = useState(["S", "M", "L", "XL", "Free Size"]);
-  const addOption = (setOptions: React.Dispatch<React.SetStateAction<string[]>>, option: string) => setOptions((current) => current.some((item) => item.toLowerCase() === option.toLowerCase()) ? current : [...current, option]);
-  return <View style={styles.section}>
-    <Text style={styles.heading}>Variants</Text>
-    <View style={styles.cards}>{variants.map((variant, index) => <VariantCard key={variant.id} index={index} variant={variant} colours={colours} sizes={sizes} onChange={(value) => onChange(variant.id, value)} onDelete={() => onDelete(variant.id)} onCreateColour={(option) => addOption(setColours, option)} onCreateSize={(option) => addOption(setSizes, option)} />)}</View>
-    <Pressable style={styles.addButton} onPress={onAdd}><Ionicons name="add-circle-outline" size={19} color="#2563EB" /><Text style={styles.addButtonText}>Add Variant</Text></Pressable>
-  </View>;
+export default function VariantList({ variants, metadata, onChange, onAdd, onDelete, onAddOption }: Props) {
+  return (
+    <View style={styles.section}>
+      <Text style={styles.heading}>Variants</Text>
+      <View style={styles.cards}>
+        {variants.map((variant, index) => (
+          <VariantCard
+            key={variant.id}
+            index={index}
+            variant={variant}
+            colours={metadata.colours}
+            sizes={metadata.sizes}
+            onChange={(value) => onChange(variant.id, value)}
+            onDelete={() => onDelete(variant.id)}
+            onAddColour={(option) => onAddOption("colours", option)}
+            onAddSize={(option) => onAddOption("sizes", option)}
+          />
+        ))}
+      </View>
+      <Pressable style={styles.addButton} onPress={onAdd}>
+        <Ionicons name="add-circle-outline" size={19} color="#2563EB" />
+        <Text style={styles.addButtonText}>Add Variant</Text>
+      </Pressable>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
