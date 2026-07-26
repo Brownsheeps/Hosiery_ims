@@ -16,7 +16,7 @@ interface ReportTableProps {
 }
 
 export default function ReportTable({ movements }: ReportTableProps) {
-  const headers = ["Date", "SKU", "Item", "Type", "Quantity", "User", "Remarks"];
+  const headers = ["Date", "SKU", "Item", "Type", "Quantity", "Remarks", "User"];
 
   return (
     <View style={styles.container}>

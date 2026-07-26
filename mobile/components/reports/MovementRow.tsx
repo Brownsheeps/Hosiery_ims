@@ -13,6 +13,27 @@ interface MovementRowProps {
   };
 }
 
+function getColumnWidth(column: string) {
+  switch (column) {
+    case "Date":
+      return { width: 110 };
+    case "SKU":
+      return { width: 110 };
+    case "Item":
+      return { width: 170 };
+    case "Type":
+      return { width: 100 };
+    case "Quantity":
+      return { width: 90 };
+    case "Remarks":
+      return { width: 180 };
+    case "User":
+      return { width: 120 };
+    default:
+      return { width: 120 };
+  }
+}
+
 export default function MovementRow({ movement }: MovementRowProps) {
   const normalizedType = movement.movementType.toLowerCase();
   const isStockIn = normalizedType.includes("in") && !normalizedType.includes("out");
@@ -32,21 +53,57 @@ export default function MovementRow({ movement }: MovementRowProps) {
     badgeLabel = "Adjustment";
   }
 
-  return (
-    <View style={styles.row}>
-      <View style={styles.cell}><Text style={styles.text}>{movement.date}</Text></View>
-      <View style={styles.cell}><Text style={styles.text}>{movement.sku}</Text></View>
-      <View style={styles.cell}><Text style={styles.text}>{movement.product}</Text></View>
-      <View style={styles.cell}>
-        <View style={[styles.badge, { backgroundColor: `${badgeColor}15` }]}> 
-          <Text style={[styles.badgeText, { color: badgeColor }]}>{badgeLabel}</Text>
-        </View>
-      </View>
-      <View style={styles.cell}><Text style={styles.text}>{movement.quantity}</Text></View>
-      <View style={styles.cell}><Text style={styles.text}>{movement.reference}</Text></View>
-      <View style={styles.cell}><Text style={styles.text}>{movement.user}</Text></View>
+ return (
+  <View style={styles.row}>
+    <View style={[styles.cell, getColumnWidth("Date")]}>
+      <Text numberOfLines={1} ellipsizeMode="tail" style={styles.text}>
+        {movement.date}
+      </Text>
     </View>
-  );
+
+    <View style={[styles.cell, getColumnWidth("SKU")]}>
+      <Text numberOfLines={1} ellipsizeMode="tail" style={styles.text}>
+        {movement.sku}
+      </Text>
+    </View>
+
+    <View style={[styles.cell, getColumnWidth("Item")]}>
+      <Text numberOfLines={1} ellipsizeMode="tail" style={styles.text}>
+        {movement.product}
+      </Text>
+    </View>
+
+    <View style={[styles.cell, getColumnWidth("Type")]}>
+      <View style={[styles.badge, { backgroundColor: `${badgeColor}15` }]}>
+        <Text
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          style={[styles.badgeText, { color: badgeColor }]}
+        >
+          {badgeLabel}
+        </Text>
+      </View>
+    </View>
+
+    <View style={[styles.cell, getColumnWidth("Quantity")]}>
+      <Text numberOfLines={1} style={styles.text}>
+        {movement.quantity}
+      </Text>
+    </View>
+
+    <View style={[styles.cell, getColumnWidth("Remarks")]}>
+      <Text numberOfLines={1} ellipsizeMode="tail" style={styles.text}>
+        {movement.reference}
+      </Text>
+    </View>
+
+    <View style={[styles.cell, getColumnWidth("User")]}>
+      <Text numberOfLines={1} ellipsizeMode="tail" style={styles.text}>
+        {movement.user}
+      </Text>
+    </View>
+  </View>
+);
 }
 
 const styles = StyleSheet.create({
@@ -59,14 +116,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cell: {
-    minWidth: 110,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    justifyContent: "center",
+  paddingHorizontal: 12,
+  paddingVertical: 10,
+  justifyContent: "center",
+  overflow: "hidden",
   },
   text: {
     color: "#374151",
     fontSize: 13,
+    flexShrink: 1,
   },
   badge: {
     alignSelf: "flex-start",
