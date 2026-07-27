@@ -5,6 +5,7 @@ import ProductInformation from "@/components/add-product/ProductInformation";
 import VariantList from "@/components/add-product/VariantList";
 import type { MetaOption, ProductDetails, ProductMetadata, ProductVariant } from "@/components/add-product/types";
 import { API_BASE_URL } from "@/constants/api";
+import { fetchWithSingleRetry } from "@/lib/fetch-with-single-retry";
 
 const emptyProduct: ProductDetails = {
   name: "", category: null, brand: null, supplier: null, description: "",
@@ -13,6 +14,16 @@ const emptyProduct: ProductDetails = {
 const emptyMetadata: ProductMetadata = {
   categories: [], brands: [], suppliers: [], colours: [], sizes: [],
 };
+
+interface CreateProductResponse {
+  message?: string;
+  data: {
+    productSku: string;
+    variants: Array<{
+      variantSku: string;
+    }>;
+  };
+}
 
 const createVariant = (): ProductVariant => ({
   id: `v-${Date.now()}-${Math.random()}`,
@@ -102,13 +113,12 @@ export default function AddProductScreen() {
     setSaving(true);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/products`, {
+      const { response: res, json } = await fetchWithSingleRetry<CreateProductResponse>(`${API_BASE_URL}/api/products`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(buildBody(product, variants)),
       });
 
-      const json = await res.json();
       if (!res.ok) return Alert.alert("Error", json.message ?? "Failed to save product");
 
       const skus = json.data.variants.map((v: any) => v.variantSku).join("\n");

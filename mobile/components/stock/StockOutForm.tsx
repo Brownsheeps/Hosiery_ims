@@ -5,6 +5,7 @@ import QuantityInput from "@/components/stock/QuantityInput";
 import RemarksInput from "@/components/stock/RemarksInput";
 import LoadingStockIn from "@/components/stock/LoadingStockIn";
 import { API_BASE_URL } from "@/constants/api";
+import { fetchWithSingleRetry } from "@/lib/fetch-with-single-retry";
 import { ProductSearchItem, QuantityValueState, StockOutResponse } from "./interface/types";
 
 export default function StockOutForm() {
@@ -46,15 +47,13 @@ export default function StockOutForm() {
         remarks: remarks.trim() || null,
       };
 
-      const res = await fetch(`${API_BASE_URL}/api/stock/out`, {
+      const { response: res, json } = await fetchWithSingleRetry<StockOutResponse>(`${API_BASE_URL}/api/stock/out`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
-
-      const json: StockOutResponse = await res.json();
 
       if (!res.ok) {
         const message = json?.message || "An error occurred";
