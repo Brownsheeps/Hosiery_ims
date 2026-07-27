@@ -5,6 +5,7 @@ import QuantityInput from "@/components/stock/QuantityInput";
 import RemarksInput from "@/components/stock/RemarksInput";
 import LoadingStockIn from "@/components/stock/LoadingStockIn";
 import { API_BASE_URL } from "@/constants/api";
+import { fetchWithSingleRetry } from "@/lib/fetch-with-single-retry";
 import { ProductSearchItem, QuantityValueState, StockInResponse } from "./interface/types";
 
 export default function StockInForm() {
@@ -54,7 +55,7 @@ export default function StockInForm() {
       const payloadToSend = payload;
       console.log("[StockIn] Sending payload:", payloadToSend);
 
-      const res = await fetch(`${API_BASE_URL}/api/stock/in`, {
+      const { response: res, json } = await fetchWithSingleRetry<StockInResponse>(`${API_BASE_URL}/api/stock/in`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -62,7 +63,6 @@ export default function StockInForm() {
         body: JSON.stringify(payloadToSend),
       });
 
-      const json: StockInResponse = await res.json();
       console.log("[StockIn] Response status:", res.status, "ok:", res.ok, "body:", json);
 
       if (!res.ok) {

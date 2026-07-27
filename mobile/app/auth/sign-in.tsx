@@ -151,10 +151,12 @@ export default function Page() {
       )}
       <ThemedText style={styles.label}>Password</ThemedText>
       <TextInput
-        style={styles.input}
+        style={[styles.input, styles.passwordInput]}
         value={password}
         placeholder="Enter password"
         placeholderTextColor="#666666"
+        selectionColor="#111827"
+        cursorColor="#111827"
         secureTextEntry={true}
         onChangeText={(password) => setPassword(password)}
       />
@@ -205,6 +207,9 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     backgroundColor: '#fff',
+  },
+  passwordInput: {
+    color: '#111827',
   },
   button: {
     backgroundColor: '#0a7ea4',

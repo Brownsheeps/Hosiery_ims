@@ -3,6 +3,7 @@ import { Alert, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } fro
 import { useLocalSearchParams, useRouter } from "expo-router";
 import StockInHeader from "@/components/stock/StockInHeader";
 import { API_BASE_URL } from "@/constants/api";
+import { fetchWithSingleRetry } from "@/lib/fetch-with-single-retry";
 import type { ProductSearchItem } from "@/components/stock/interface/types";
 
 interface AdjustmentFormState {
@@ -108,7 +109,7 @@ export default function StockAdjustment() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/stock/adjust`, {
+      const { response, json } = await fetchWithSingleRetry<AdjustmentResponse>(`${API_BASE_URL}/api/stock/adjust`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -119,8 +120,6 @@ export default function StockAdjustment() {
           remarks: form.remarks.trim() || null,
         }),
       });
-
-      const json: AdjustmentResponse = await response.json();
 
       if (!response.ok) {
         Alert.alert("Error", json?.message || "Unable to record stock adjustment.");
