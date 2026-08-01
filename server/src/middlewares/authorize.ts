@@ -25,6 +25,7 @@ export const authorize = (...allowedRoles: string[]) => {
     // 3. Read the user's role name
     const userRole = req.user.roles.name;
 
+
     // 4. Compare it against the allowed roles passed to the middleware
     if (!allowedRoles.includes(userRole)) {
       res.status(403).json({ error: AUTH_ERRORS.FORBIDDEN });

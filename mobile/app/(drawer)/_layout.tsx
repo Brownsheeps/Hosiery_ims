@@ -11,8 +11,7 @@ export default function DrawerLayout() {
   const { isLoaded, isSignedIn, signOut } = useAuth();
   const { user, loading, isActive, isPending, isRejected, isAdmin } = useAuthorization();
 
-  // Wait for Clerk to initialize and profile to load (if signed in)
-  if (!isLoaded || (isSignedIn && loading)) {
+  if (!isLoaded) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#FFFFFF" />
@@ -20,13 +19,22 @@ export default function DrawerLayout() {
     );
   }
 
-  // If signed out, send user to login
   if (!isSignedIn) {
     return <Redirect href="/auth/sign-in" />;
   }
 
-  // Protect navigation if user is not active or not approved
-  if (!user) {
+  const drawerContent = (props: any) => (
+    <View style={styles.drawerRoot}>
+      <CustomDrawer {...props} />
+      {loading && (
+        <View style={styles.loadingOverlay} pointerEvents="auto">
+          <ActivityIndicator size="large" color="#FFFFFF" />
+        </View>
+      )}
+    </View>
+  );
+
+  if (!loading && !user) {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorTitle}>Unable to Load Account</Text>
@@ -36,7 +44,7 @@ export default function DrawerLayout() {
     );
   }
 
-  if (!isActive) {
+  if (!loading && !isActive) {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorTitle}>Account Inactive</Text>
@@ -46,7 +54,7 @@ export default function DrawerLayout() {
     );
   }
 
-  if (isPending) {
+  if (!loading && isPending) {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorTitle}>Pending Approval</Text>
@@ -56,7 +64,7 @@ export default function DrawerLayout() {
     );
   }
 
-  if (isRejected) {
+  if (!loading && isRejected) {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorTitle}>Access Denied</Text>
@@ -68,7 +76,7 @@ export default function DrawerLayout() {
 
   return (
     <Drawer
-      drawerContent={(props) => <CustomDrawer {...props} />}
+      drawerContent={drawerContent}
       screenOptions={{
         headerShown: false,
         drawerStyle: {
@@ -169,7 +177,6 @@ export default function DrawerLayout() {
         }}
       />
 
-      {/* Admin specific routes - Only register these if admin */}
       <Drawer.Screen
         name="user-approvals"
         options={{
@@ -196,11 +203,21 @@ export default function DrawerLayout() {
 }
 
 const styles = StyleSheet.create({
+  drawerRoot: {
+    flex: 1,
+  },
   loadingContainer: {
     flex: 1, 
     justifyContent: 'center', 
     alignItems: 'center', 
     backgroundColor: '#0F172A'
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(15, 23, 42, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   },
   errorContainer: {
     flex: 1,

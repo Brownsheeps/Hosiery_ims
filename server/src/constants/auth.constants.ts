@@ -7,8 +7,8 @@ export const USER_STATUS = {
 
 /** Roles that determine a user's authorization level. */
 export const USER_ROLE = {
-  ADMIN: "admin",
-  EMPLOYEE: "employee",
+  ADMIN: "Admin",
+  EMPLOYEE: "Employee",
 } as const;
 
 /** Standard authorization error messages returned by protected resources. */

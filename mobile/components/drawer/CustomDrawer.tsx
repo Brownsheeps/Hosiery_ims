@@ -31,8 +31,6 @@ export default function CustomDrawer(
         contentContainerStyle={{ paddingTop: 0 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* ================= HEADER ================= */}
-
         <View style={styles.header}>
           <View>
             <Text style={styles.title}>
@@ -58,18 +56,12 @@ export default function CustomDrawer(
           </TouchableOpacity>
         </View>
 
-        {/* Divider */}
-
         <View style={styles.divider} />
-
-        {/* Drawer Menu */}
 
         <View style={styles.menu}>
           <DrawerItemList {...props} />
         </View>
       </DrawerContentScrollView>
-
-      {/* ================= FOOTER ================= */}
 
       <View style={styles.footer}>
         <Text style={styles.email}>

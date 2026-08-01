@@ -1,6 +1,11 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useAuth } from '@clerk/expo';
-import { useApi } from '@/hooks/useApi';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+} from "react";
+import { useAuth } from "@clerk/expo";
+import { API_BASE_URL } from "@/constants/api";
 
 export type UserProfile = {
   id: string;
@@ -20,9 +25,13 @@ type UserContextType = {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-export const UserProvider = ({ children }: { children: React.ReactNode }) => {
-  const { isLoaded, isSignedIn } = useAuth();
-  const { request } = useApi();
+export const UserProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -33,17 +42,30 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
       return;
     }
-    
+
     try {
       setLoading(true);
       setError(null);
-      // useApi automatically catches 401/403 and alerts! 
-      const res = await request('/api/users/me');
-      if (res.ok) {
-        const json = await res.json();
-        setUser(json.data);
+
+      const token = await getToken();
+
+      const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : {},
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch profile");
       }
+
+      const json = await response.json();
+
+      setUser(json.data);
     } catch (err: any) {
+      console.error("Profile fetch error:", err);
       setError(err);
     } finally {
       setLoading(false);
@@ -52,12 +74,19 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (isLoaded) {
-      fetchProfile();
+      void fetchProfile();
     }
   }, [isLoaded, isSignedIn]);
 
   return (
-    <UserContext.Provider value={{ user, loading, error, refresh: fetchProfile }}>
+    <UserContext.Provider
+      value={{
+        user,
+        loading,
+        error,
+        refresh: fetchProfile,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );
@@ -65,8 +94,10 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useUserContext = () => {
   const context = useContext(UserContext);
-  if (context === undefined) {
-    throw new Error('useUserContext must be used within a UserProvider');
+
+  if (!context) {
+    throw new Error("useUserContext must be used within a UserProvider");
   }
+
   return context;
 };
