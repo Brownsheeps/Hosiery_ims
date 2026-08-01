@@ -7,10 +7,11 @@ interface ApprovalCardProps {
   user: PendingUser;
   onApprove: (user: PendingUser) => void;
   onReject: (user: PendingUser) => void;
+  isSubmitting?: boolean;
 }
 
 function formatJoinedDate(value: string) {
-  const date = new Date(`${value}T00:00:00`);
+  const date = new Date(value);
 
   return date.toLocaleDateString("en-GB", {
     day: "2-digit",
@@ -19,7 +20,7 @@ function formatJoinedDate(value: string) {
   });
 }
 
-export default function ApprovalCard({ user, onApprove, onReject }: ApprovalCardProps) {
+export default function ApprovalCard({ user, onApprove, onReject, isSubmitting = false }: ApprovalCardProps) {
   const initials = user.fullName
     .split(" ")
     .map((name) => name.charAt(0))
@@ -58,11 +59,19 @@ export default function ApprovalCard({ user, onApprove, onReject }: ApprovalCard
       </View>
 
       <View style={styles.actions}>
-        <Pressable style={styles.rejectButton} onPress={() => onReject(user)}>
-          <Text style={styles.rejectText}>Reject</Text>
+        <Pressable
+          style={[styles.rejectButton, isSubmitting && styles.actionButtonDisabled]}
+          onPress={() => onReject(user)}
+          disabled={isSubmitting}
+        >
+          <Text style={styles.rejectText}>{isSubmitting ? "Processing..." : "Reject"}</Text>
         </Pressable>
-        <Pressable style={styles.approveButton} onPress={() => onApprove(user)}>
-          <Text style={styles.approveText}>Approve</Text>
+        <Pressable
+          style={[styles.approveButton, isSubmitting && styles.actionButtonDisabled]}
+          onPress={() => onApprove(user)}
+          disabled={isSubmitting}
+        >
+          <Text style={styles.approveText}>{isSubmitting ? "Processing..." : "Approve"}</Text>
         </Pressable>
       </View>
     </View>
@@ -198,5 +207,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
     color: "#FFFFFF",
+  },
+  actionButtonDisabled: {
+    opacity: 0.65,
   },
 });

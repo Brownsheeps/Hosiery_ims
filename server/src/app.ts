@@ -14,6 +14,7 @@ const app = express();
 app.use(cors());
 
 
+
 app.use(
     "/api/webhooks/clerk",
     express.raw({ type: "application/json" })
@@ -23,8 +24,9 @@ app.use(
 // to verify that the request is comming from clerk and not from any other source 
 // so for that digital signature clerk creates it using raw body that is why we need raw body 
 
-app.use("/api/users", userRouter);
 app.use(express.json());
+app.use("/api/users", userRouter);
+
 app.use("/api/webhooks", webhookRoutes);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/inventory", inventoryRouter);

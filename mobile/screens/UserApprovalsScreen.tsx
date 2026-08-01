@@ -1,47 +1,129 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { DrawerActions } from "@react-navigation/native";
 import { useNavigation } from "expo-router";
-import { ActivityIndicator, FlatList, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import ApprovalCard from "@/components/approvals/ApprovalCard";
 import EmptyApprovalState from "@/components/approvals/EmptyApprovalState";
-import { mockPendingUsers } from "@/data/mockPendingUsers";
+import { API_BASE_URL } from "@/constants/api";
+import { fetchWithSingleRetry } from "@/lib/fetch-with-single-retry";
 import type { PendingUser } from "@/types/approval.types";
+
+interface PendingUsersApiResponse {
+  success: boolean;
+  message?: string;
+  data: {
+    id: string;
+    full_name: string;
+    email: string;
+    status: "PENDING";
+    created_at: string;
+  }[];
+}
+
+interface UserApprovalApiResponse {
+  success: boolean;
+  message?: string;
+}
 
 export default function UserApprovalsScreen() {
   const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState("");
-  const isLoading = false;
-  const error: string | null = null;
+  const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [submittingUserId, setSubmittingUserId] = useState<string | null>(null);
 
-  const pendingUsers = useMemo(() => {
+  const fetchPendingUsers = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/users/pending`);
+      const json: PendingUsersApiResponse = await response.json();
+
+      if (!response.ok || !json.success) {
+        throw new Error(json.message || "Unable to load approval requests.");
+      }
+
+      setPendingUsers(
+        json.data.map((user) => ({
+          id: user.id,
+          fullName: user.full_name,
+          email: user.email,
+          status: user.status,
+          createdAt: user.created_at,
+        })),
+      );
+    } catch (requestError) {
+      const message = requestError instanceof Error ? requestError.message : "Unable to load approval requests.";
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchPendingUsers();
+  }, [fetchPendingUsers]);
+
+  const filteredPendingUsers = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
     if (!normalizedQuery) {
-      return mockPendingUsers;
+      return pendingUsers;
     }
 
-    return mockPendingUsers.filter((user) =>
+    return pendingUsers.filter((user) =>
       [user.fullName, user.email].some((value) => value.toLowerCase().includes(normalizedQuery)),
     );
-  }, [searchQuery]);
+  }, [pendingUsers, searchQuery]);
 
-  function handleApprove(user: PendingUser) {
-    // TODO:
-    // Call approve user API
-    void user;
+  async function updateUserApproval(user: PendingUser, action: "approve" | "reject") {
+    setSubmittingUserId(user.id);
+
+    try {
+      const options: RequestInit = {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      };
+
+      if (action === "approve") {
+        options.body = JSON.stringify({ roleId: 2 });
+      }
+
+      const { response, json } = await fetchWithSingleRetry<UserApprovalApiResponse>(
+        `${API_BASE_URL}/api/users/${user.id}/${action}`,
+        options,
+      );
+
+      if (!response.ok || !json.success) {
+        throw new Error(json.message || `Unable to ${action} user.`);
+      }
+
+      setPendingUsers((currentUsers) => currentUsers.filter((currentUser) => currentUser.id !== user.id));
+      Alert.alert("Success", json.message || `User ${action === "approve" ? "approved" : "rejected"}.`);
+    } catch (requestError) {
+      const message = requestError instanceof Error ? requestError.message : `Unable to ${action} user.`;
+      Alert.alert("Error", message);
+    } finally {
+      setSubmittingUserId(null);
+    }
   }
 
-  function handleReject(user: PendingUser) {
-    // TODO:
-    // Call reject user API
-    void user;
+  function handleApprove(user: PendingUser) {
+    void updateUserApproval(user, "approve");
   }
 
   function handleRetry() {
-    // TODO:
-    // Retry pending user approvals API request
+    void fetchPendingUsers();
+  }
+
+  function handleReject(user: PendingUser) {
+    void updateUserApproval(user, "reject");
   }
 
   if (isLoading) {
@@ -58,9 +140,16 @@ export default function UserApprovalsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
-        data={error ? [] : pendingUsers}
+        data={error ? [] : filteredPendingUsers}
         keyExtractor={(user) => user.id}
-        renderItem={({ item }) => <ApprovalCard user={item} onApprove={handleApprove} onReject={handleReject} />}
+        renderItem={({ item }) => (
+          <ApprovalCard
+            user={item}
+            onApprove={handleApprove}
+            onReject={handleReject}
+            isSubmitting={submittingUserId === item.id}
+          />
+        )}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={

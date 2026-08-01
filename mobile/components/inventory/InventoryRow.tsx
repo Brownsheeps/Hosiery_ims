@@ -43,7 +43,9 @@ export default function InventoryRow({ item, onAdjust }: InventoryRowProps) {
       </Text>
       <Text style={styles.cell}>{formatCurrency(item.purchasePrice)}</Text>
       <Text style={styles.cell}>{formatCurrency(item.sellingPrice)}</Text>
-      <StockBadge stock={item.stock} />
+      <View style={styles.stockCell}>
+        <StockBadge stock={item.stock} />
+      </View>
       <View style={styles.actionCell}>
         <Pressable style={styles.adjustButton} onPress={() => onAdjust?.(item)}>
           <Text style={styles.adjustButtonText}>Adjust</Text>
@@ -58,13 +60,14 @@ function formatCurrency(value: number | null) {
     return "-";
   }
 
-  return `$${value.toFixed(2)}`;
+  return `₹${value.toFixed(2)}`;
 }
 
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
+    paddingHorizontal: 12,
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
@@ -79,6 +82,11 @@ const styles = StyleSheet.create({
   actionCell: {
     width: 100,
     alignItems: "center",
+  },
+  stockCell: {
+    width: 140,
+    alignItems: "center",
+    paddingRight: 8,
   },
   adjustButton: {
     backgroundColor: "#2563EB",

@@ -35,7 +35,7 @@ export default function InventoryTable({ items, loading, onAdjust }: InventoryTa
             <Text style={styles.headerCell}>SIZE</Text>
             <Text style={styles.headerCell}>PURCHASE</Text>
             <Text style={styles.headerCell}>SELLING</Text>
-            <Text style={styles.headerCell}>STOCK</Text>
+            <Text style={styles.headerStockCell}>STOCK</Text>
             <Text style={styles.headerActionCell}>ACTION</Text>
           </View>
 
@@ -85,6 +85,15 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     textTransform: "uppercase",
     textAlign: "center",
+  },
+  headerStockCell: {
+    width: 140,
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#6B7280",
+    textTransform: "uppercase",
+    textAlign: "center",
+    paddingRight: 8,
   },
   bodyScroll: {
     flex: 1,

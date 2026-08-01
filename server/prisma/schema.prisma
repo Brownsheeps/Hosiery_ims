@@ -10,8 +10,9 @@ datasource db {
 model brands {
   id         Int        @id @default(autoincrement())
   name       String     @unique @db.VarChar(100)
-  brand_code String      @unique @db.VarChar(5)  
+ 
   created_at DateTime?  @default(now()) @db.Timestamp(6)
+  brand_code String     @unique @db.VarChar(5)
   products   products[]
 }
 
@@ -25,8 +26,8 @@ model categories {
 model colours {
   id          Int                @id @default(autoincrement())
   name        String             @unique @db.VarChar(100)
-  colour_code String             @unique @db.VarChar(5)
   created_at  DateTime?          @default(now()) @db.Timestamp(6)
+  colour_code String             @unique @db.VarChar(5)
   variants    product_variants[]
 }
 
@@ -65,21 +66,21 @@ model inventory_transactions {
 model products {
   id                  Int                @id @default(autoincrement())
   sku                 String             @unique @db.VarChar(100)
-  sequence            Int
   product_name        String             @db.VarChar(255)
   brand_id            Int?
   category_id         Int?
   supplier_id         Int?
   product_description String?
-  is_deleted          Boolean            @default(false)
   created_at          DateTime?          @default(now()) @db.Timestamp(6)
   updated_at          DateTime           @updatedAt
+  sequence            Int
+  is_deleted          Boolean            @default(false)
   variants            product_variants[]
   brands              brands?            @relation(fields: [brand_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   categories          categories?        @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   suppliers           suppliers?         @relation(fields: [supplier_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
- @@unique([brand_id, sequence])
+  @@unique([brand_id, sequence])
 }
 
 model product_variants {
@@ -90,10 +91,10 @@ model product_variants {
   color_id               Int?
   purchase_price         Decimal?                 @db.Decimal(10, 2)
   selling_price          Decimal?                 @db.Decimal(10, 2)
-  min_stock              Int?                     @default(0)
-  is_deleted             Boolean                  @default(false)
   created_at             DateTime?                @default(now()) @db.Timestamp(6)
   updated_at             DateTime                 @updatedAt
+  min_stock              Int?                     @default(0)
+  is_deleted             Boolean                  @default(false)
   inventory              inventory?
   inventory_transactions inventory_transactions[]
   colour                 colours?                 @relation(fields: [color_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -113,8 +114,8 @@ model roles {
 model sizes {
   id         Int                @id @default(autoincrement())
   name       String             @unique @db.VarChar(100)
-  size_code  String             @unique @db.VarChar(5)
   created_at DateTime?          @default(now()) @db.Timestamp(6)
+  size_code  String             @unique @db.VarChar(5)
   variants   product_variants[]
 }
 
@@ -140,7 +141,6 @@ model suppliers {
 
 model users {
   id                     String                   @id @default(cuid())
-  clerk_id               String                   @unique
   full_name              String                   @db.VarChar(255)
   email                  String                   @unique @db.VarChar(255)
   role_id                Int?
@@ -148,8 +148,10 @@ model users {
   is_active              Boolean?                 @default(true)
   created_at             DateTime?                @default(now()) @db.Timestamp(6)
   updated_at             DateTime                 @updatedAt
+  clerk_id               String                   @unique
   csv_import_logs        csv_import_logs[]
   inventory_transactions inventory_transactions[]
   stock_adjustments      stock_adjustments[]
   roles                  roles?                   @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
+
