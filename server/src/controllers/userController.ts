@@ -5,6 +5,24 @@ import {
     rejectUserService,
 } from "../services/userService.js";
 
+export async function getMe(req: Request, res: Response) {
+    if (!req.user) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: {
+            id: req.user.id,
+            full_name: req.user.full_name,
+            email: req.user.email,
+            role: req.user.roles?.name || null,
+            status: req.user.status,
+            is_active: req.user.is_active,
+        }
+    });
+}
+
 export async function getPendingUsers(
     req: Request,
     res: Response

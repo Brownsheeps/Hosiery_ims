@@ -3,9 +3,20 @@ import {
     getPendingUsers,
     approveUser,
     rejectUser,
+    getMe,
 } from "../controllers/userController.js";
+import { authMiddleware } from "../middlewares/auth.js";
+import { requireApproved } from "../middlewares/requireApproved.js";
+import { authorize } from "../middlewares/authorize.js";
+import { USER_ROLE } from "../constants/auth.constants.js";
 
 const router = Router();
+
+// /me endpoint for retrieving current user profile (Unrestricted other than being authenticated)
+router.get("/me", authMiddleware, getMe);
+
+// Restrict all other user routes to ADMIN only
+router.use(authMiddleware, requireApproved, authorize(USER_ROLE.ADMIN));
 
 /**
  * Get all pending users

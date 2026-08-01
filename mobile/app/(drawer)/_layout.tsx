@@ -2,15 +2,22 @@ import { Drawer } from "expo-router/drawer";
 import { Redirect } from "expo-router";
 import { useAuth } from "@clerk/expo";
 import { Ionicons } from "@expo/vector-icons";
+import { ActivityIndicator, View, Text, Button, StyleSheet } from "react-native";
 
 import CustomDrawer from "@/components/drawer/CustomDrawer";
+import { useProfile } from "@/hooks/useProfile";
 
 export default function DrawerLayout() {
-  const { isLoaded, isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn, signOut } = useAuth();
+  const { profile, loading } = useProfile();
 
-  // Wait for Clerk to initialize
-  if (!isLoaded) {
-    return null;
+  // Wait for Clerk to initialize and profile to load (if signed in)
+  if (!isLoaded || (isSignedIn && loading)) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#FFFFFF" />
+      </View>
+    );
   }
 
   // If signed out, send user to login
@@ -18,26 +25,55 @@ export default function DrawerLayout() {
     return <Redirect href="/auth/sign-in" />;
   }
 
+  // Protect navigation if user is not active or not approved
+  if (profile?.is_active === false) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorTitle}>Account Inactive</Text>
+        <Text style={styles.errorDescription}>Your account has been deactivated.</Text>
+        <Button title="Sign out" onPress={() => signOut()} color="#EF4444" />
+      </View>
+    );
+  }
+
+  if (profile?.status === 'PENDING') {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorTitle}>Pending Approval</Text>
+        <Text style={styles.errorDescription}>Your account is awaiting administrator approval.</Text>
+        <Button title="Sign out" onPress={() => signOut()} color="#EF4444" />
+      </View>
+    );
+  }
+
+  if (profile?.status === 'REJECTED') {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorTitle}>Access Denied</Text>
+        <Text style={styles.errorDescription}>Your account has been rejected.</Text>
+        <Button title="Sign out" onPress={() => signOut()} color="#EF4444" />
+      </View>
+    );
+  }
+
+  const isAdmin = profile?.role === 'admin';
+
   return (
     <Drawer
       drawerContent={(props) => <CustomDrawer {...props} />}
       screenOptions={{
         headerShown: false,
-
         drawerStyle: {
           backgroundColor: "#0F172A",
           width: 290,
         },
-
         drawerActiveBackgroundColor: "#26395B",
         drawerActiveTintColor: "#FFFFFF",
         drawerInactiveTintColor: "#FFFFFF",
-
         drawerLabelStyle: {
           fontSize: 17,
           fontWeight: "600",
         },
-
         drawerItemStyle: {
           borderRadius: 12,
           marginHorizontal: 10,
@@ -50,11 +86,7 @@ export default function DrawerLayout() {
         options={{
           title: "Dashboard",
           drawerIcon: ({ color, size }) => (
-            <Ionicons
-              name="grid-outline"
-              color={color}
-              size={size}
-            />
+            <Ionicons name="grid-outline" color={color} size={size} />
           ),
         }}
       />
@@ -64,11 +96,7 @@ export default function DrawerLayout() {
         options={{
           title: "Inventory",
           drawerIcon: ({ color, size }) => (
-            <Ionicons
-              name="cube-outline"
-              color={color}
-              size={size}
-            />
+            <Ionicons name="cube-outline" color={color} size={size} />
           ),
         }}
       />
@@ -88,11 +116,7 @@ export default function DrawerLayout() {
         options={{
           title: "Stock In",
           drawerIcon: ({ color, size }) => (
-            <Ionicons
-              name="arrow-down-outline"
-              color={color}
-              size={size}
-            />
+            <Ionicons name="arrow-down-outline" color={color} size={size} />
           ),
         }}
       />
@@ -102,11 +126,7 @@ export default function DrawerLayout() {
         options={{
           title: "Stock Out",
           drawerIcon: ({ color, size }) => (
-            <Ionicons
-              name="arrow-up-outline"
-              color={color}
-              size={size}
-            />
+            <Ionicons name="arrow-up-outline" color={color} size={size} />
           ),
         }}
       />
@@ -116,11 +136,7 @@ export default function DrawerLayout() {
         options={{
           title: "Stock Adjustment",
           drawerIcon: ({ color, size }) => (
-            <Ionicons
-              name="create-outline"
-              color={color}
-              size={size}
-            />
+            <Ionicons name="create-outline" color={color} size={size} />
           ),
         }}
       />
@@ -130,11 +146,7 @@ export default function DrawerLayout() {
         options={{
           title: "Invoice",
           drawerIcon: ({ color, size }) => (
-            <Ionicons
-              name="receipt-outline"
-              color={color}
-              size={size}
-            />
+            <Ionicons name="receipt-outline" color={color} size={size} />
           ),
         }}
       />
@@ -144,26 +156,20 @@ export default function DrawerLayout() {
         options={{
           title: "Reports",
           drawerIcon: ({ color, size }) => (
-            <Ionicons
-              name="document-text-outline"
-              color={color}
-              size={size}
-            />
+            <Ionicons name="document-text-outline" color={color} size={size} />
           ),
         }}
       />
 
+      {/* Admin specific routes - Only register these if admin */}
       <Drawer.Screen
         name="user-approvals"
         options={{
           title: "User Approvals",
           drawerIcon: ({ color, size }) => (
-            <Ionicons
-              name="people-outline"
-              color={color}
-              size={size}
-            />
+            <Ionicons name="people-outline" color={color} size={size} />
           ),
+          drawerItemStyle: { display: isAdmin ? 'flex' : 'none' }
         }}
       />
 
@@ -172,14 +178,39 @@ export default function DrawerLayout() {
         options={{
           title: "Settings",
           drawerIcon: ({ color, size }) => (
-            <Ionicons
-              name="settings-outline"
-              color={color}
-              size={size}
-            />
+            <Ionicons name="settings-outline" color={color} size={size} />
           ),
+          drawerItemStyle: { display: isAdmin ? 'flex' : 'none' }
         }}
       />
     </Drawer>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    backgroundColor: '#0F172A'
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#0F172A',
+    padding: 24,
+  },
+  errorTitle: {
+    color: '#FFF',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  errorDescription: {
+    color: '#94A3B8',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 32,
+  }
+});

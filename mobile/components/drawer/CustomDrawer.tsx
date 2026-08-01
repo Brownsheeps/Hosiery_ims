@@ -15,12 +15,14 @@ import {
 
 import { Ionicons } from "@expo/vector-icons";
 import { DrawerActions } from "@react-navigation/native";
+import { useProfile } from "../../hooks/useProfile";
 
 export default function CustomDrawer(
   props: DrawerContentComponentProps
 ) {
-      const { user } = useUser();
+  const { user } = useUser();
   const { signOut } = useClerk();
+  const { profile } = useProfile();
 
   return (
     <View style={styles.container}>
@@ -34,8 +36,8 @@ export default function CustomDrawer(
         <View style={styles.header}>
           <View>
             <Text style={styles.title}>
-  {user?.firstName ? `Hi, ${user.firstName}` : "Hosiery IMS"}
-</Text>
+              {user?.firstName ? `Hi, ${user.firstName}` : "Hosiery IMS"}
+            </Text>
             <Text style={styles.subtitle}>
               Wholesale Inventory
             </Text>
@@ -71,19 +73,19 @@ export default function CustomDrawer(
 
       <View style={styles.footer}>
         <Text style={styles.email}>
-  {user?.primaryEmailAddress?.emailAddress ?? "No Email"}
-</Text>
+          {user?.primaryEmailAddress?.emailAddress ?? "No Email"}
+        </Text>
 
         <Text style={styles.role}>
-          EMPLOYEE
+          {profile?.role ? profile.role.toUpperCase() : "LOADING..."}
         </Text>
 
         <TouchableOpacity
-  style={styles.signOut}
-  onPress={async () => {
-    await signOut();
-  }}
->
+          style={styles.signOut}
+          onPress={async () => {
+            await signOut();
+          }}
+        >
           <Ionicons
             name="log-out-outline"
             size={22}
