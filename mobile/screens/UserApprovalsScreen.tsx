@@ -6,8 +6,7 @@ import { ActivityIndicator, Alert, FlatList, Pressable, SafeAreaView, StyleSheet
 
 import ApprovalCard from "@/components/approvals/ApprovalCard";
 import EmptyApprovalState from "@/components/approvals/EmptyApprovalState";
-import { API_BASE_URL } from "@/constants/api";
-import { fetchWithSingleRetry } from "@/lib/fetch-with-single-retry";
+import { useApi } from "@/hooks/useApi";
 import type { PendingUser } from "@/types/approval.types";
 
 interface PendingUsersApiResponse {
@@ -29,6 +28,7 @@ interface UserApprovalApiResponse {
 
 export default function UserApprovalsScreen() {
   const navigation = useNavigation();
+  const { request } = useApi();
   const [searchQuery, setSearchQuery] = useState("");
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,7 +40,7 @@ export default function UserApprovalsScreen() {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/users/pending`);
+      const response = await request("/api/users/pending");
       const json: PendingUsersApiResponse = await response.json();
 
       if (!response.ok || !json.success) {
@@ -62,7 +62,7 @@ export default function UserApprovalsScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [request]);
 
   useEffect(() => {
     void fetchPendingUsers();
@@ -95,10 +95,8 @@ export default function UserApprovalsScreen() {
         options.body = JSON.stringify({ roleId: 2 });
       }
 
-      const { response, json } = await fetchWithSingleRetry<UserApprovalApiResponse>(
-        `${API_BASE_URL}/api/users/${user.id}/${action}`,
-        options,
-      );
+      const response = await request(`/api/users/${user.id}/${action}`, options);
+      const json: UserApprovalApiResponse = await response.json();
 
       if (!response.ok || !json.success) {
         throw new Error(json.message || `Unable to ${action} user.`);

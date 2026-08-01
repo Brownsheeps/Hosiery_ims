@@ -17,7 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import StatsSection from "@/components/dashboard/StatsSection";
 import RecentActivitySection from "@/components/dashboard/RecentActivitySection";
 import LowStockSection from "@/components/dashboard/LowStockSection";
-import { API_BASE_URL } from "@/constants/api";
+import { useApi } from "@/hooks/useApi";
 
 interface DashboardResponse {
   stats: {
@@ -47,6 +47,7 @@ interface DashboardResponse {
 
 export default function Dashboard() {
   const { signOut } = useClerk();
+  const { request } = useApi();
   const navigation = useNavigation();
 
   const [dashboard, setDashboard] =
@@ -67,7 +68,7 @@ export default function Dashboard() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/dashboard`);
+      const response = await request("/api/dashboard");
 
       const json = await response.json();
 
@@ -81,7 +82,7 @@ export default function Dashboard() {
       }
       isFetchingRef.current = false;
     }
-  }, []);
+  }, [request]);
 
   useEffect(() => {
     void fetchDashboard();

@@ -2,8 +2,7 @@ import { useMemo, useState } from "react";
 import { Alert, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import StockInHeader from "@/components/stock/StockInHeader";
-import { API_BASE_URL } from "@/constants/api";
-import { fetchWithSingleRetry } from "@/lib/fetch-with-single-retry";
+import { useApi } from "@/hooks/useApi";
 import type { ProductSearchItem } from "@/components/stock/interface/types";
 
 interface AdjustmentFormState {
@@ -27,6 +26,7 @@ interface AdjustmentResponse {
 
 export default function StockAdjustment() {
   const router = useRouter();
+  const { request } = useApi();
   const params = useLocalSearchParams<{
     variantId?: string;
     sku?: string;
@@ -109,7 +109,7 @@ export default function StockAdjustment() {
     setLoading(true);
 
     try {
-      const { response, json } = await fetchWithSingleRetry<AdjustmentResponse>(`${API_BASE_URL}/api/stock/adjust`, {
+      const response = await request("/api/stock/adjust", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -120,6 +120,7 @@ export default function StockAdjustment() {
           remarks: form.remarks.trim() || null,
         }),
       });
+      const json: AdjustmentResponse = await response.json();
 
       if (!response.ok) {
         Alert.alert("Error", json?.message || "Unable to record stock adjustment.");

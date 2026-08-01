@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { API_BASE_URL } from "@/constants/api";
+import { useApi } from "@/hooks/useApi";
 
 export interface InvoiceProductOption { id: number; sku: string; productName: string; sellingPrice: number | null; }
 export interface InvoiceRowData { id: string; product: InvoiceProductOption | null; rate: number; quantity: number; total: number; }
@@ -21,6 +21,7 @@ function formatCurrency(value: number | null | undefined) {
 }
 
 export default function InvoiceRow({ item, onSelectProduct, onQuantityChange, onRemove }: InvoiceRowProps) {
+  const { request } = useApi();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<InvoiceProductOption[]>([]);
@@ -43,7 +44,7 @@ export default function InvoiceRow({ item, onSelectProduct, onQuantityChange, on
     setLoading(true);
     debounceRef.current = setTimeout(async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/products/search?q=${encodeURIComponent(searchTerm)}`);
+        const response = await request(`/api/products/search?q=${encodeURIComponent(searchTerm)}`);
         if (!response.ok) throw new Error("Unable to search products.");
         const json = await response.json();
         if (requestRef.current !== requestId) return;
@@ -55,7 +56,7 @@ export default function InvoiceRow({ item, onSelectProduct, onQuantityChange, on
       } catch (error) { console.error(error); if (requestRef.current === requestId) setResults([]); }
       finally { if (requestRef.current === requestId) setLoading(false); }
     }, 300);
-  }, []);
+  }, [request]);
 
   function openSearch() { fieldRef.current?.measureInWindow((x, y, width) => { setPosition({ top: y, left: x, width: Math.max(width, 220) }); setOpen(true); }); }
   function closeSearch() { setOpen(false); setPosition(null); }

@@ -1,28 +1,22 @@
-/**
- * User status constants for approval workflow.
- */
+/** Supported lifecycle states for application users. */
 export const USER_STATUS = {
   PENDING: "PENDING",
   APPROVED: "APPROVED",
   REJECTED: "REJECTED",
 } as const;
 
-/**
- * User role constants for authorization.
- */
+/** Roles that determine a user's authorization level. */
 export const USER_ROLE = {
   ADMIN: "admin",
   EMPLOYEE: "employee",
 } as const;
 
-/**
- * Standardized authentication and authorization error messages.
- */
+/** Standard authorization error messages returned by protected resources. */
 export const AUTH_ERRORS = {
-  NO_TOKEN: "No authentication token provided.",
-  INVALID_TOKEN: "Invalid or expired authentication token.",
-  USER_NOT_FOUND: "User not found in the system.",
-  USER_NOT_APPROVED: "User account is pending approval or has been rejected.",
-  USER_INACTIVE: "User account is currently inactive.",
+  NO_TOKEN: "Authorization token is required.",
+  INVALID_TOKEN: "Authorization token is invalid or expired.",
+  USER_NOT_FOUND: "Authenticated user was not found.",
+  USER_NOT_APPROVED: "User account has not been approved.",
+  USER_INACTIVE: "User account is inactive.",
   FORBIDDEN: "You do not have permission to perform this action.",
 } as const;

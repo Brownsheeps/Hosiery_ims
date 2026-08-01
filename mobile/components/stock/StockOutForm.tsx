@@ -4,11 +4,11 @@ import ProductDropdown from "@/components/stock/ProductDropdown";
 import QuantityInput from "@/components/stock/QuantityInput";
 import RemarksInput from "@/components/stock/RemarksInput";
 import LoadingStockIn from "@/components/stock/LoadingStockIn";
-import { API_BASE_URL } from "@/constants/api";
-import { fetchWithSingleRetry } from "@/lib/fetch-with-single-retry";
+import { useApi } from "@/hooks/useApi";
 import { ProductSearchItem, QuantityValueState, StockOutResponse } from "./interface/types";
 
 export default function StockOutForm() {
+  const { request } = useApi();
   const [selectedVariant, setSelectedVariant] = useState<ProductSearchItem | null>(null);
   const [quantityValues, setQuantityValues] = useState<QuantityValueState>({
     boxQuantity: 0,
@@ -47,13 +47,14 @@ export default function StockOutForm() {
         remarks: remarks.trim() || null,
       };
 
-      const { response: res, json } = await fetchWithSingleRetry<StockOutResponse>(`${API_BASE_URL}/api/stock/out`, {
+      const res = await request("/api/stock/out", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
+      const json: StockOutResponse = await res.json();
 
       if (!res.ok) {
         const message = json?.message || "An error occurred";
