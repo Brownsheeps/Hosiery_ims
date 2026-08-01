@@ -154,6 +154,20 @@ export default function DrawerLayout() {
       />
 
       <Drawer.Screen
+        name="user-approvals"
+        options={{
+          title: "User Approvals",
+          drawerIcon: ({ color, size }) => (
+            <Ionicons
+              name="people-outline"
+              color={color}
+              size={size}
+            />
+          ),
+        }}
+      />
+
+      <Drawer.Screen
         name="settings"
         options={{
           title: "Settings",

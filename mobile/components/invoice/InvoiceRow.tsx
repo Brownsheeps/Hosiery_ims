@@ -7,7 +7,18 @@ export interface InvoiceProductOption { id: number; sku: string; productName: st
 export interface InvoiceRowData { id: string; product: InvoiceProductOption | null; rate: number; quantity: number; total: number; }
 interface InvoiceRowProps { item: InvoiceRowData; onSelectProduct: (product: InvoiceProductOption | null) => void; onQuantityChange: (quantity: number) => void; onRemove: () => void; }
 
-function formatCurrency(value: number) { return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value); }
+function formatCurrency(value: number | null | undefined) {
+  if (value === null || value === undefined) {
+    return "-";
+  }
+
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
 
 export default function InvoiceRow({ item, onSelectProduct, onQuantityChange, onRemove }: InvoiceRowProps) {
   const [open, setOpen] = useState(false);

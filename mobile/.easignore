@@ -1,0 +1,41 @@
+# dependencies
+node_modules
+
+# expo
+.expo
+.expo-shared
+
+# git
+.git
+.gitignore
+
+# build
+build
+dist
+coverage
+
+# native
+/android
+/ios
+android/app/build
+android/.gradle
+ios/build
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# mac
+.DS_Store
+
+# vscode
+.vscode
+
+# temp
+*.tmp
+*.temp
+
+# tests
+__tests__
