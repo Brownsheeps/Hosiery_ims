@@ -11,10 +11,11 @@ import ReportTable from "@/components/reports/ReportTable";
 import LoadingSkeleton from "@/components/reports/LoadingSkeleton";
 import EmptyState from "@/components/reports/EmptyState";
 import { useReports } from "@/hooks/useReports";
-import { API_BASE_URL } from "@/constants/api";
+import { useApi } from "@/hooks/useApi";
 
 export default function ReportsScreen() {
   const { summaryCards, movements, loading, refreshing, error, refreshReports } = useReports();
+  const { request } = useApi();
   const [exportingType, setExportingType] = useState<string | null>(null);
 
   const onRefresh = useCallback(() => {
@@ -25,7 +26,7 @@ export default function ReportsScreen() {
     try {
       setExportingType(type);
 
-      const response = await fetch(`${API_BASE_URL}/api/reports/export?type=${type}`);
+      const response = await request(`/api/reports/export?type=${type}`);
       if (!response.ok) {
         throw new Error("Failed to fetch export dataset from server.");
       }

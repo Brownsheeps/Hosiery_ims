@@ -1,5 +1,5 @@
 import React from "react";
-import { useUser, useClerk } from "@clerk/expo";
+import { useClerk } from "@clerk/expo";
 import {
   DrawerContentScrollView,
   DrawerItemList,
@@ -15,14 +15,14 @@ import {
 
 import { Ionicons } from "@expo/vector-icons";
 import { DrawerActions } from "@react-navigation/native";
-import { useProfile } from "../../hooks/useProfile";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 export default function CustomDrawer(
   props: DrawerContentComponentProps
 ) {
-  const { user } = useUser();
   const { signOut } = useClerk();
-  const { profile } = useProfile();
+  const { user } = useCurrentUser();
+  const firstName = user?.full_name.split(" ")[0];
 
   return (
     <View style={styles.container}>
@@ -36,7 +36,7 @@ export default function CustomDrawer(
         <View style={styles.header}>
           <View>
             <Text style={styles.title}>
-              {user?.firstName ? `Hi, ${user.firstName}` : "Hosiery IMS"}
+              {firstName ? `Hi, ${firstName}` : "Hosiery IMS"}
             </Text>
             <Text style={styles.subtitle}>
               Wholesale Inventory
@@ -73,11 +73,11 @@ export default function CustomDrawer(
 
       <View style={styles.footer}>
         <Text style={styles.email}>
-          {user?.primaryEmailAddress?.emailAddress ?? "No Email"}
+          {user?.email ?? "No Email"}
         </Text>
 
         <Text style={styles.role}>
-          {profile?.role ? profile.role.toUpperCase() : "LOADING..."}
+          {user?.role ? user.role.toUpperCase() : "LOADING..."}
         </Text>
 
         <TouchableOpacity

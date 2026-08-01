@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
-import { API_BASE_URL } from "@/constants/api";
+import { useApi } from "@/hooks/useApi";
 import { ProductDropdownProps, ProductSearchItem } from "./interface/types";
 
 
 export default function ProductDropdown({ value, onSelect, error }: ProductDropdownProps) {
+  const { request } = useApi();
 
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<ProductSearchItem[]>([]);
@@ -43,7 +44,7 @@ export default function ProductDropdown({ value, onSelect, error }: ProductDropd
       setLoading(true);
 
       try {
-        const response = await fetch( `${API_BASE_URL}/api/products/search?q=${encodeURIComponent(q)}`);
+        const response = await request(`/api/products/search?q=${encodeURIComponent(q)}`);
 
         if (!response.ok) {
           setItems([]);

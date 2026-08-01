@@ -7,7 +7,7 @@ import { isAvailableAsync, shareAsync } from "expo-sharing";
 import * as XLSX from "xlsx";
 
 import InventoryHeader from "@/components/inventory/InventoryHeader";
-import { API_BASE_URL } from "@/constants/api";
+import { useApi } from "@/hooks/useApi";
 import InventoryTable from "@/components/inventory/InventoryTable";
 import InventoryToolbar from "@/components/inventory/InventoryToolbar";
 import { type CategoryOption } from "@/components/inventory/CategoryFilter";
@@ -39,6 +39,7 @@ const PAGE_SIZE = 20;
 
 export default function Inventory() {
   const router = useRouter();
+  const { request } = useApi();
   const [searchValue, setSearchValue] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [allItems, setAllItems] = useState<InventoryApiResponse["data"]["items"]>([]);
@@ -55,7 +56,7 @@ export default function Inventory() {
       let totalPages = 1;
 
       while (currentPage <= totalPages) {
-        const response = await fetch(`${API_BASE_URL}/api/inventory?page=${currentPage}&pageSize=100`);
+        const response = await request(`/api/inventory?page=${currentPage}&pageSize=100`);
         if (!response.ok) {
           throw new Error("Unable to fetch inventory.");
         }
@@ -72,7 +73,7 @@ export default function Inventory() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [request]);
 
   useEffect(() => {
     void fetchInventory();

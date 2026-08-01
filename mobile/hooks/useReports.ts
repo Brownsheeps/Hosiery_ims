@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { API_BASE_URL } from "@/constants/api";
+import { useApi } from "@/hooks/useApi";
 
 interface ReportSummary {
     currentInventory: number;
@@ -44,6 +44,7 @@ interface ReportsApiResponse {
 }
 
 export function useReports() {
+    const { request } = useApi();
     const [summary, setSummary] = useState<ReportSummary | null>(null);
     const [movements, setMovements] = useState<Movement[]>([]);
     const [loading, setLoading] = useState(true);
@@ -58,7 +59,7 @@ export function useReports() {
                 setLoading(true);
             }
 
-            const response = await fetch(`${API_BASE_URL}/api/reports?page=1&pageSize=30`);
+            const response = await request("/api/reports?page=1&pageSize=30");
             if (!response.ok) {
                 throw new Error("Unable to fetch reports.");
             }
@@ -91,7 +92,7 @@ export function useReports() {
             setLoading(false);
             setRefreshing(false);
         }
-    }, []);
+    }, [request]);
 
     useEffect(() => {
         void loadReports();

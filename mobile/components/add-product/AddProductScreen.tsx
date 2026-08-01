@@ -4,8 +4,7 @@ import StockInHeader from "@/components/stock/StockInHeader";
 import ProductInformation from "@/components/add-product/ProductInformation";
 import VariantList from "@/components/add-product/VariantList";
 import type { MetaOption, ProductDetails, ProductMetadata, ProductVariant } from "@/components/add-product/types";
-import { API_BASE_URL } from "@/constants/api";
-import { fetchWithSingleRetry } from "@/lib/fetch-with-single-retry";
+import { useApi } from "@/hooks/useApi";
 
 const emptyProduct: ProductDetails = {
   name: "", category: null, brand: null, supplier: null, description: "",
@@ -60,6 +59,7 @@ function buildBody(product: ProductDetails, variants: ProductVariant[]) {
 }
 
 export default function AddProductScreen() {
+  const { request } = useApi();
 
   const [metadata, setMetadata] = useState<ProductMetadata>(emptyMetadata);
   const [metaLoading, setMetaLoading] = useState(true);
@@ -69,7 +69,7 @@ export default function AddProductScreen() {
 
   useEffect(() => {
 
-    fetch(`${API_BASE_URL}/api/products/metadata`)
+    request("/api/products/metadata")
       .then((r) => r.json())
       .then((json) => {
         if (json.success) {
@@ -84,7 +84,7 @@ export default function AddProductScreen() {
       })
       .catch(() => Alert.alert("Error", "Could not load product metadata"))
       .finally(() => setMetaLoading(false));
-  }, []);
+  }, [request]);
 
   const addOption = useCallback((field: keyof ProductMetadata, option: MetaOption) => {
     setMetadata((prev) => {
@@ -113,11 +113,12 @@ export default function AddProductScreen() {
     setSaving(true);
 
     try {
-      const { response: res, json } = await fetchWithSingleRetry<CreateProductResponse>(`${API_BASE_URL}/api/products`, {
+      const res = await request("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(buildBody(product, variants)),
       });
+      const json: CreateProductResponse = await res.json();
 
       if (!res.ok) return Alert.alert("Error", json.message ?? "Failed to save product");
 

@@ -5,11 +5,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { ActivityIndicator, View, Text, Button, StyleSheet } from "react-native";
 
 import CustomDrawer from "@/components/drawer/CustomDrawer";
-import { useProfile } from "@/hooks/useProfile";
+import { useAuthorization } from "@/hooks/useAuthorization";
 
 export default function DrawerLayout() {
   const { isLoaded, isSignedIn, signOut } = useAuth();
-  const { profile, loading } = useProfile();
+  const { user, loading, isActive, isPending, isRejected, isAdmin } = useAuthorization();
 
   // Wait for Clerk to initialize and profile to load (if signed in)
   if (!isLoaded || (isSignedIn && loading)) {
@@ -26,7 +26,17 @@ export default function DrawerLayout() {
   }
 
   // Protect navigation if user is not active or not approved
-  if (profile?.is_active === false) {
+  if (!user) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorTitle}>Unable to Load Account</Text>
+        <Text style={styles.errorDescription}>Your account profile could not be loaded. Please sign in again.</Text>
+        <Button title="Sign out" onPress={() => signOut()} color="#EF4444" />
+      </View>
+    );
+  }
+
+  if (!isActive) {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorTitle}>Account Inactive</Text>
@@ -36,7 +46,7 @@ export default function DrawerLayout() {
     );
   }
 
-  if (profile?.status === 'PENDING') {
+  if (isPending) {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorTitle}>Pending Approval</Text>
@@ -46,7 +56,7 @@ export default function DrawerLayout() {
     );
   }
 
-  if (profile?.status === 'REJECTED') {
+  if (isRejected) {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorTitle}>Access Denied</Text>
@@ -55,8 +65,6 @@ export default function DrawerLayout() {
       </View>
     );
   }
-
-  const isAdmin = profile?.role === 'admin';
 
   return (
     <Drawer

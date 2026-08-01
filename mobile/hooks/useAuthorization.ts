@@ -4,7 +4,7 @@ import { useCurrentUser } from './useCurrentUser';
  * Convenience hook that exposes boolean flags and robust permission checking against the current user context.
  */
 export const useAuthorization = () => {
-  const { user, loading } = useCurrentUser();
+  const { user, loading, error, refresh } = useCurrentUser();
 
   const isAdmin = user?.role === 'admin';
   const isEmployee = user?.role === 'employee';
@@ -21,5 +21,17 @@ export const useAuthorization = () => {
     return roles.includes(user.role);
   };
 
-  return { isAdmin, isEmployee, isApproved, isActive, isPending, isRejected, hasRole, loading };
+  return {
+    user,
+    loading,
+    error,
+    refresh,
+    isAdmin,
+    isEmployee,
+    isApproved,
+    isActive,
+    isPending,
+    isRejected,
+    hasRole,
+  };
 };

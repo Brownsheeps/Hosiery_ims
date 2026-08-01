@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useAuth } from '@clerk/expo';
 import { API_BASE_URL } from '@/constants/api';
 import { useRouter } from 'expo-router';
@@ -7,12 +8,12 @@ export const useApi = () => {
   const { getToken, signOut } = useAuth();
   const router = useRouter();
 
-  const handleUnauthorized = async () => {
+  const handleUnauthorized = useCallback(async () => {
     await signOut();
     router.replace('/auth/sign-in');
-  };
+  }, [router, signOut]);
 
-  const handleForbidden = async (errorMsg: string) => {
+  const handleForbidden = useCallback(async (errorMsg: string) => {
     if (errorMsg === "User account is pending approval or has been rejected.") {
       Alert.alert("Pending Approval", "Your account is awaiting administrator approval.");
     } else if (errorMsg === "User account is currently inactive.") {
@@ -20,9 +21,9 @@ export const useApi = () => {
     } else {
       Alert.alert("Access Denied", "You do not have permission to access this feature.");
     }
-  };
+  }, []);
 
-  const request = async (endpoint: string, options: RequestInit = {}) => {
+  const request = useCallback(async (endpoint: string, options: RequestInit = {}) => {
     try {
       const token = await getToken();
       
@@ -55,7 +56,7 @@ export const useApi = () => {
         try {
             const data = await response.json();
             msg = data.error || msg;
-        } catch(e) {}
+        } catch {}
         await handleForbidden(msg);
         throw new Error(msg);
       }
@@ -64,7 +65,7 @@ export const useApi = () => {
     } catch (error) {
       throw error;
     }
-  };
+  }, [getToken, handleForbidden, handleUnauthorized]);
 
   return { request };
 };
