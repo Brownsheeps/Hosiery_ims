@@ -4,6 +4,7 @@ import dashboardRouter from "./routes/dashboard.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import inventoryRouter from "./routes/inventory.js";
 import stockRouter from "./routes/stock.js";
+import userRouter from "./routes/user.js";
 import reportRouter from "./routes/reports.js";
 import productRouter from "./routes/products.js";
 import webhookRoutes from "./routes/webhook.routes.js";
@@ -22,7 +23,7 @@ app.use(
 // to verify that the request is comming from clerk and not from any other source 
 // so for that digital signature clerk creates it using raw body that is why we need raw body 
 
-
+app.use("/api/users", userRouter);
 app.use(express.json());
 app.use("/api/webhooks", webhookRoutes);
 app.use("/api/dashboard", dashboardRouter);

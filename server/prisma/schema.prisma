@@ -142,6 +142,7 @@ model users {
   full_name              String                   @db.VarChar(255)
   email                  String                   @unique @db.VarChar(255)
   role_id                Int?
+  status                 String                   @default("PENDING") @db.VarChar(20)
   is_active              Boolean?                 @default(true)
   created_at             DateTime?                @default(now()) @db.Timestamp(6)
   updated_at             DateTime                 @updatedAt

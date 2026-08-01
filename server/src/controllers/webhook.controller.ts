@@ -60,6 +60,10 @@ export async function clerkWebhook(
         clerk_id: user.id,
         full_name: fullName,
         email,
+
+        role_id: null,
+        status: "PENDING",
+        is_active: true,
       },
     });
 
