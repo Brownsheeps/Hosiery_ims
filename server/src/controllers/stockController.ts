@@ -24,7 +24,10 @@ export async function stockIn(
     next: NextFunction
 ): Promise<void> {
     try {
-        const data = await stockService.stockIn(getStockMovementBody(req));
+        const data = await stockService.stockIn(
+            getStockMovementBody(req),
+            req.user.id
+        );
         sendSuccess(res, data, "Stock in recorded successfully", 201);
     } catch (error) {
         next(error);
@@ -37,7 +40,10 @@ export async function stockOut(
     next: NextFunction
 ): Promise<void> {
     try {
-        const data = await stockService.stockOut(getStockMovementBody(req));
+        const data = await stockService.stockOut(
+            getStockMovementBody(req),
+            req.user.id
+        );
         sendSuccess(res, data, "Stock out recorded successfully", 201);
     } catch (error) {
         next(error);
@@ -49,6 +55,9 @@ export async function stockAdjust(
     res: Response,
     next: NextFunction
 ): Promise<void> {
-    const data = await stockService.stockAdjust(getStockMovementBody(req));
+    const data = await stockService.stockAdjust(
+        getStockMovementBody(req),
+        req.user.id
+    );
     sendSuccess(res, data, "Stock adjustment recorded successfully", 201);
 }
