@@ -28,7 +28,10 @@ function variantWhere(data: StockMovementInput) {
   return data.variantId ? { id: data.variantId } : { sku: data.sku as string };
 }
 
-export async function stockIn(data: StockMovementInput) {
+export async function stockIn(
+  data: StockMovementInput,
+  performedBy: number
+) {
   return prisma.$transaction(async (tx) => {
 
     const variant = await tx.product_variants.findFirst({
@@ -48,6 +51,7 @@ export async function stockIn(data: StockMovementInput) {
         txn_type: TransactionType.STOCK_IN,
         quantity: data.quantity,
         remarks: data.remarks,
+        performed_by: performedBy,
       },
     });
 
@@ -69,7 +73,10 @@ export async function stockIn(data: StockMovementInput) {
   });
 }
 
-export async function stockOut(data: StockMovementInput) {
+export async function stockOut(
+  data: StockMovementInput,
+  performedBy: number
+) {
   return prisma.$transaction(async (tx) => {
     const variant = await tx.product_variants.findFirst({
       where: variantWhere(data),
@@ -106,6 +113,7 @@ export async function stockOut(data: StockMovementInput) {
         txn_type: TransactionType.STOCK_OUT,
         quantity: data.quantity,
         remarks: data.remarks,
+        performed_by: performedBy,
       },
     });
 
@@ -118,7 +126,10 @@ export async function stockOut(data: StockMovementInput) {
   });
 }
 
-export async function stockAdjust(data: StockMovementInput) {
+export async function stockAdjust(
+  data: StockMovementInput,
+  performedBy: number
+) {
   return prisma.$transaction(async (tx) => {
     const variant = await tx.product_variants.findFirst({
       where: variantWhere(data),
@@ -166,6 +177,7 @@ export async function stockAdjust(data: StockMovementInput) {
         txn_type: TransactionType.ADJUSTMENT,
         quantity: difference,
         remarks: data.remarks,
+        performed_by: performedBy,
       },
     });
 

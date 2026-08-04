@@ -44,6 +44,8 @@ interface ReportsApiResponse {
 }
 
 export function useReports() {
+
+    console.log("useReports render");
     const { request } = useApi();
     const [summary, setSummary] = useState<ReportSummary | null>(null);
     const [movements, setMovements] = useState<Movement[]>([]);
@@ -52,6 +54,7 @@ export function useReports() {
     const [error, setError] = useState<string | null>(null);
 
     const loadReports = useCallback(async (isRefresh = false) => {
+        console.log("loadReports called", isRefresh);
         try {
             if (isRefresh) {
                 setRefreshing(true);
@@ -95,8 +98,10 @@ export function useReports() {
     }, [request]);
 
     useEffect(() => {
+        console.log("Reports useEffect");
         void loadReports();
-    }, [loadReports]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const refreshReports = useCallback(() => loadReports(true), [loadReports]);
 

@@ -45,6 +45,7 @@ export const authMiddleware = async (
     // 4. Extract the Clerk user id
     const clerkId = decoded.sub;
 
+
     // 5. Query Prisma using clerk_id and include the related role
     const user = await prisma.users.findUnique({
       where: { clerk_id: clerkId },

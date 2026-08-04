@@ -75,9 +75,7 @@ export default function Inventory() {
     }
   }, [request]);
 
-  useEffect(() => {
-    void fetchInventory();
-  }, [fetchInventory]);
+
 
   useFocusEffect(
     useCallback(() => {

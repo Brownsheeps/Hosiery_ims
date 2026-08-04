@@ -17,6 +17,8 @@ export default function UserApprovalsRoute() {
     );
   }
 
+console.log("isAdmin:", isAdmin);
+
   if (!isAdmin) {
     return <Redirect href="/dashboard" />;
   }
